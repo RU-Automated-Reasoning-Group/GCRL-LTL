@@ -7,7 +7,6 @@ import gym
 import numpy as np
 import spot
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import SubprocVecEnv
 
 from envs import ZonesEnv
 from ltl_wrappers import RandomGoalLTLNormalEnv
@@ -215,7 +214,7 @@ def main(args):
     subtask_function_version = args.subtask_function_version
     max_timesteps = args.max_timesteps
 
-    #model = PPO.load(rl_model_path, device=device)
+    model = PPO.load(rl_model_path, device=device)
     num_success = 0
     num_J_success = 0
     num_W_success = 0
@@ -225,13 +224,6 @@ def main(args):
     
     if exp == 'avoid':
         sampler = getLTLSampler('Until_1_2_1_1', ['J', 'W', 'R', 'Y'])
-    elif exp == 'reaching':
-        sampler = getLTLSampler('Sequence_2_2', ['J', 'W', 'R', 'Y'])
-    # NOTE: test only
-    elif exp == 'test':
-        #sampler = getLTLSampler('Eventually_1_5_1_4', propositions='abcdefghijkl')
-        sampler = getLTLSampler('Eventually_1_5_1_4', propositions='abcdemnpqrwt')
-        sampler = getLTLSampler('Until_1_3_1_2', propositions='abcdemnpqrwt')
                                                                    
     if subtask_function_version == 'v0':
         subtask_function = ltl_subtask_v0
@@ -246,40 +238,21 @@ def main(args):
 
             random.seed(seed + i)
 
-            # formula = reformat_ltl(sampler.sample())
-            # ltl_args = get_ltl_args(formula=formula)
-            # graph = gltl2ba(ltl_args)
-            # path = SCC_Algorithm(graph=graph).search()
-            # GOALS, AVOID_ZONES = parse_ltl_path(path['ltl'])
-
             raw_formula = sampler.sample()
-            print(raw_formula)
             formula = reformat_ltl(raw_formula)
-            print(formula)
             ltl_args = get_ltl_args(formula=formula)
             graph = gltl2ba(ltl_args)
             path = SCC_Algorithm(graph=graph).search()
-            print(path)
             GOALS, AVOID_ZONES = parse_ltl_path(path['ltl'])
-            print(GOALS, AVOID_ZONES)
-            exit()
-
-            # AVOID 1
-            # GOALS = GOALS[:1]
-            # AVOID_ZONES = AVOID_ZONES[1:]
-
-            # AVOID 2
-            # GOALS = GOALS[:1]
-            # AVOID_ZONES = AVOID_ZONES[:1]
-
+            
             print('+'*80)
             print('[ITERATION][{}]'.format(i))
             print('[FORMULA]', formula, '[GOALS]', GOALS, '[AVOID]', AVOID_ZONES)
 
             stage_index = 0
             env = RandomGoalLTLNormalEnv(
-                env=gym.make('Zones-5-v1', map_seed=seed+i, timeout=10000000),  # NOTE: dummy timeout
-                primitives_path='./primitives',
+                env=gym.make('Zones-8-v1', map_seed=seed+i, timeout=10000000),  # NOTE: dummy timeout
+                primitives_path='./models/primitives',
                 goals_representation=goals_representation, 
                 use_primitves=True,
                 temperature=temp,
@@ -316,12 +289,12 @@ def main(args):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--exp', type=str, default='avoid', choices=('avoid', 'reaching', 'test'))
+    parser.add_argument('--exp', type=str, default='avoid', choices=('avoid'))
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--temp', type=float, default=1.5)
     parser.add_argument('--max_timesteps', type=int, default=1000),
     parser.add_argument('--subtask_function_version', type=str, default='v0', choices=('v0', 'v1'))
-    parser.add_argument('--rl_model_path', type=str, default='../safety_models/best_model_ppo_pr_500')
+    parser.add_argument('--rl_model_path', type=str, default='models/goal-conditioned/best_model_ppo_8')
     parser.add_argument('--eval_repeats', type=int, default=10)
     parser.add_argument('--value_threshold', type=float, default=0.85)
     parser.add_argument('--device', type=str, default='cuda:0')

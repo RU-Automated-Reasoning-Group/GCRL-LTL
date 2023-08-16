@@ -19,9 +19,18 @@ register(
     entry_point='envs.safety.zones_env:ZonesEnv1Fixed')
 
 register(
-    id='Zones-5-v0',
-    entry_point='envs.safety.zones_env:ZonesEnv5')
+    id='Zones-8-v0',
+    entry_point='envs.safety.zones_env:ZonesEnv8')
 
 register(
-    id='Zones-5-v1',
-    entry_point='envs.safety.zones_env:ZonesEnv5Fixed')
+    id='Zones-8-v1',
+    entry_point='envs.safety.zones_env:ZonesEnv8Fixed')
+
+
+register(
+    id='Zones-4-v0',
+    entry_point='envs.safety.zones_env:ZonesEnv4')
+
+register(
+    id='Zones-4-v1',
+    entry_point='envs.safety.zones_env:ZonesEnv4Fixed')

@@ -10,7 +10,6 @@ from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.callbacks import EvalCallback
-from stable_baselines3.common.evaluation import evaluate_policy
 
 from envs import ZonesEnv
 from ltl_wrappers import RandomGoalLTLNormalEnv
@@ -29,7 +28,7 @@ def main(args):
     execution_mode = args.execution_mode
 
     env_fn = lambda: RandomGoalLTLNormalEnv(
-        env=gym.make('Zones-5-v0', timeout=timeout), 
+        env=gym.make('Zones-8-v0', timeout=timeout), 
         primitives_path='./models/primitives', 
         goals_representation=get_named_goal_vector(),
         use_primitves=True if execution_mode == 'primitives' else False,
@@ -59,7 +58,7 @@ def main(args):
 
         eval_log_path = "./logs/ppo_eval/{}/".format(exp_name)
         eval_env_fn = lambda: RandomGoalLTLNormalEnv(
-            env=gym.make('Zones-5-v0', timeout=1000), 
+            env=gym.make('Zones-8-v0', timeout=1000), 
             primitives_path='./models/primitives', 
             goals_representation=get_named_goal_vector(),
             use_primitves=True if execution_mode == 'primitives' else False,

@@ -1,5 +1,6 @@
 from ltl_cmd import Graph
 
+
 class SCC_Algorithm:
     def __init__(self, graph):
         self.graph = graph
@@ -75,39 +76,14 @@ class SCC_Algorithm:
 
 if __name__ == '__main__':
 
-    # NOTE: example 1
-    # graph = Graph(never_claim=None)
-    # graph.storage = {
-    #     '0': {'next': ['1', '5'], 'edges': []},
-    #     '1': {'next': [], 'edges': []},
-    #     '2': {'next': ['0', '3'], 'edges': []},
-    #     '3': {'next': ['2', '5'], 'edges': []},
-    #     '4': {'next': ['2', '3'], 'edges': []},
-    #     '5': {'next': ['4'], 'edges': []},
-    #     '6': {'next': ['0', '4', '9'], 'edges': []},
-    #     '7': {'next': ['6', '8'], 'edges': []},
-    #     '8': {'next': ['7', '9'], 'edges': []},
-    #     '9': {'next': ['10', '11'], 'edges': []},
-    #     '10': {'next': ['12'], 'edges': []},
-    #     '11': {'next': ['4', '12'], 'edges': []},
-    #     '12': {'next': ['9'], 'edges': []},
-    # }
-    # graph.accepting_nodes = ['5']
-
-    # algo = SCC_Algorithm(graph=graph)
-    # path = algo.search('8')
-    # NOTE: must fill the edges to execute
-
-    # NOTE: example 2
-    from collections import OrderedDict
     from types import SimpleNamespace
     from ltl_cmd import gltl2ba
 
     args = SimpleNamespace()
     args.formula = '(! w) U ( r && ((! y) U j))'
     args.formula = '(!p U d) && (!e U (q && (!n U a)))'
-    #args.formula = '(! w) U ( r && ((! y) U j)) U (! y)'
-    #args.formula = '<>b && a U b'
+    args.formula = '(! w) U ( r && ((! y) U j)) U (! y)'
+    args.formula = '<>b && a U b'
     args.formula = '[](<>(o && X (<> (c && X<> d))))'
     args.formula = 'GFa && GFb'
     args.formula = '[]<>a && []<>b'

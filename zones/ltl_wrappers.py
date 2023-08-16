@@ -310,11 +310,6 @@ class RandomGoalLTLNormalEnv(gym.Wrapper):
             act = np.zeros((2,), dtype=np.float32)
             for idx, a in enumerate(action['action']):
                act += self._translate_primitive(a) * action['distribution'][idx]
-            acts = []
-            # for idx, a in enumerate(action['action']):
-            #     acts.append(self._translate_primitive(a))
-            #     act += self._translate_primitive(a) * action['distribution'][idx]
-            # print('[ACTION]', act, '[ACTION J]', acts[0], '[ACTION R]', acts[1])
             return act
         else:
             return self._translate_primitive(action)

@@ -108,67 +108,7 @@ class ZonesEnv(Engine):
             self.placements.update(self.placements_dict_from_object('zone'))
 
     def build_world_config(self):
-        world_config = super().build_world_config()
-        zones_layout = {}
-        for key in self.layout:
-            if 'zone' in key:
-                zones_layout.update({key: self.layout[key]})
-        # print(zones_layout)
-        # for key in zones_layout:
-        #     zone_index = int(key[-1])
-        #     if zone_index in [1, 3, 5, 7]:
-        #         zones_layout.update({key: self.layout['zone'+str(zone_index - 1)]})
-        for key in zones_layout:
-            zone_index = int(key[-1])
-            
-            # NOTE: for circle pictures
-            # if zone_index in [0]: # J
-            #     zones_layout.update({key: np.array([-2, 0])})
-            # if zone_index in [1]: # R
-            #     zones_layout.update({key: np.array([2, 0])})
-            # if zone_index in [2]: # W
-            #     zones_layout.update({key: np.array([0, 2])})
-            # if zone_index in [3]: # Y
-            #     zones_layout.update({key: np.array([0, -2])})
-            
-            if zone_index in [0]: # J
-                zones_layout.update({key: np.array([0, 0])})
-            if zone_index in [1]: # R
-                zones_layout.update({key: np.array([2, 0])})
-            if zone_index in [2]: # W
-                zones_layout.update({key: np.array([0, 2])})
-            if zone_index in [3]: # Y
-                zones_layout.update({key: np.array([0, -2])})
-
-
-            # # NOTE: for f1
-            # if zone_index in [0]: # J
-            #     zones_layout.update({key: np.array([-1, 1])})
-            # if zone_index in [1]: # R
-            #     zones_layout.update({key: np.array([-1+0.2, 1-0.2])})
-            # if zone_index in [2]: # W
-            #     zones_layout.update({key: np.array([1, 1])})
-            # if zone_index in [3]: # Y
-            #     zones_layout.update({key: np.array([-1, -1])})
-
-            # NOTE: for avoid RYW
-            # if zone_index in [0]: # J
-            #     zones_layout.update({key: np.array([-1, 1])})
-            # if zone_index in [1]: # R
-            #     zones_layout.update({key: np.array([0, 0])})
-            # if zone_index in [2]: # W
-            #     zones_layout.update({key: np.array([0.375, 0.375])})
-            # if zone_index in [3]: # Y
-            #     zones_layout.update({key: np.array([-0.375, -0.375])})
-        
-        # 'zones_locations': [[-1.5, 0], [-1.5, 0], [1.5, 0], [1.5, 0], [0, 0], [0, 0], [2, 2], [2, 2],],
-        # z1, z2 = random.sample(list(range(8)), 2)
-        # while abs(z1 - z2) == 1:
-        #     z1, z2 = random.sample(list(range(8)), 2)
-        # z1, z2 = 0, 2
-        #zones_layout['zone{}'.format(z1)] = zones_layout['zone{}'.format(z2)] + np.random.rand(2) * 0.45
-        self.layout.update(zones_layout)
-        
+        world_config = super().build_world_config()        
         for i in range(self.zones_num):
             name = f'zone{i}'
             geom = {'name': name,
@@ -195,7 +135,6 @@ class ZonesEnv(Engine):
                 obs[f'zones_lidar_{zone_type}'] = self.obs_lidar(pos_in_type, GROUP_ZONE)
 
         return obs
-
 
     def render_lidars(self):
         offset = super().render_lidars()
@@ -247,13 +186,18 @@ class ZonesEnv1Fixed(LTLZonesEnv):
         }
         super().__init__(zones=[zone.Red], use_fixed_map=True, timeout=1000, config=config)
 
-class ZonesEnv5(LTLZonesEnv):
+class ZonesEnv8(LTLZonesEnv):
     def __init__(self, timeout=1000):
-        #super().__init__(zones=[zone.JetBlack, zone.JetBlack, zone.Red, zone.Red, zone.White, zone.White,  zone.Yellow, zone.Yellow], use_fixed_map=True, timeout=timeout)
-        super().__init__(zones=[zone.JetBlack, zone.Red, zone.White, zone.Yellow], use_fixed_map=True, timeout=timeout)
-
-class ZonesEnv5Fixed(LTLZonesEnv):
+        super().__init__(zones=[zone.JetBlack, zone.JetBlack, zone.Red, zone.Red, zone.White, zone.White,  zone.Yellow, zone.Yellow], use_fixed_map=True, timeout=timeout)
+        
+class ZonesEnv8Fixed(LTLZonesEnv):
     def __init__(self, map_seed, timeout=1000):
-        #super().__init__(zones=[zone.JetBlack, zone.JetBlack, zone.Red, zone.Red, zone.White, zone.White,  zone.Yellow, zone.Yellow], use_fixed_map=True, timeout=timeout, map_seed=map_seed)
+        super().__init__(zones=[zone.JetBlack, zone.JetBlack, zone.Red, zone.Red, zone.White, zone.White,  zone.Yellow, zone.Yellow], use_fixed_map=True, timeout=timeout, map_seed=map_seed)
+
+class ZonesEnv8(LTLZonesEnv):
+    def __init__(self, timeout=1000):
+        super().__init__(zones=[zone.JetBlack, zone.Red, zone.White, zone.Yellow], use_fixed_map=True, timeout=timeout)
+        
+class ZonesEnv8Fixed(LTLZonesEnv):
+    def __init__(self, map_seed, timeout=1000):
         super().__init__(zones=[zone.JetBlack, zone.Red, zone.White, zone.Yellow], use_fixed_map=True, timeout=timeout, map_seed=map_seed)
-        #super().__init__(zones=[zone.JetBlack, zone.Red, zone.White], use_fixed_map=True, timeout=timeout, map_seed=map_seed)
