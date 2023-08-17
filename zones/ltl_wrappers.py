@@ -241,7 +241,7 @@ class RandomGoalLTLNormalEnv(gym.Wrapper):
     PRIMITVE_OBS_DIM = 12
     DT = 0.002
 
-    def __init__(self, env, primitives_path, goals_representation, temperature=1.25, use_primitves=True, rewards=[0, 1], device=torch.device('cuda:0'), max_timesteps=1000):
+    def __init__(self, env, primitives_path, goals_representation, temperature=1.25, use_primitves=True, rewards=[0, 1], device=torch.device('cuda:0'), max_timesteps=1000, debug=False):
         super().__init__(env)
         self.goals = ['J', 'W', 'R', 'Y']
         self.goal_index = 0
@@ -263,6 +263,7 @@ class RandomGoalLTLNormalEnv(gym.Wrapper):
         self.temperature = temperature
         self.max_timesteps = max_timesteps
         self.executed_timesteps = 0
+        self.debug = debug
 
     def is_alive(self):
         return self.executed_timesteps < self.max_timesteps
@@ -332,7 +333,8 @@ class RandomGoalLTLNormalEnv(gym.Wrapper):
             if self.current_goal() in truth_assignment:  # TODO: improve this
                 reward = self.success_reward
                 done = True
-                #print('Yes I reached the {} goal'.format(self.current_goal()))
+                if self.debug:
+                    print('Reach zone [{}]'.format(self.current_goal()))
                 info = {'zone': self.current_goal(), 'task': self.current_goal()}
             else:
                 reward = self.others_reward

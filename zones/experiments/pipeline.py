@@ -1,6 +1,7 @@
 import argparse
 import random
 import sys
+sys.path.insert(0, sys.path[0]+"/../")
 
 import torch
 import gym
