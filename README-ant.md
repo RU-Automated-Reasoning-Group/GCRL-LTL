@@ -50,9 +50,9 @@ For example, specification phi2 (#10) means to reach the orange goal starting fr
 
 ```
 spec10  = seq(
-			choose(
-            	ev(in_room((2, 0))),
-            	ev(in_room((0, 2)))
+		choose(
+            		ev(in_room((2, 0))),
+            		ev(in_room((0, 2)))
          	),
          	ev(in_room((2, 2)))
           )
