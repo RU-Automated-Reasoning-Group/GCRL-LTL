@@ -46,6 +46,10 @@
     ```bash
     python experiments/avoidance.py
     ```
+* Traverse experiments
+    ```
+    python experiments/traverse.py
+    ```
 * Goal-chaining experiments
     ```bash
     python experiments/chaining.py
@@ -54,7 +58,7 @@
     ```bash
     python experiments/stable.py
     ```
-    See scripts in `[project_base]/zones/experiments` for more details including specifying `eval_repeats` and `device`, etc.
+    See scripts in `[project_base]/zones/experiments/` for more details including specifying `eval_repeats` and `device`, etc.
 
 ### Examples
 * The left and right figures show the trajectory for solving avoidance task $\neg y U (j \wedge (\neg wUr))$.
