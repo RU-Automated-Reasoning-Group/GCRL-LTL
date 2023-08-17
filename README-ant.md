@@ -58,37 +58,45 @@ spec10  = seq(
           )
 ```
 
-## Specifications and results shown in Gifs
+## Specifications and results shown in gifs
 
-##### specification phi1
+#### specification phi1
+
+Either to reach room(2,0)[orange position to the top] or room(0,2)[orange position to the right]
+
 <p float="left">
   <img src="./ant/misc/fig/phi1maze.png" alt="phi1maze" width="200"/>
   <img src="./ant/misc/gif/phi1.gif" alt="phi1" width="300"/>
 </p>
 
 
-##### specification phi2
+#### specification phi2
+
+To reach room(2,2)[orange] by choosing any of the two orange paths
 
 <p float="left">
   <img src="./ant/misc/fig/phi2maze.png" alt="phi2maze" width="200"/>
   <img src="./ant/misc/gif/phi2.gif" alt="phi2" width="300"/>
 </p>
+#### specification phi3
 
-##### specification phi3
+To reach room(3,1)[yellow] by reaching orange first.
 
 <p float="left">
   <img src="./ant/misc/fig/phi3maze.png" alt="phi3maze" width="200"/>
   <img src="./ant/misc/gif/phi3.gif" alt="phi3" width="300"/>
 </p>
+#### specification phi4
 
-##### specification phi4
+To reach room(1,3)[green] by reaching orange and yellow sequentially.
 
 <p float="left">
   <img src="./ant/misc/fig/phi4maze.png" alt="phi4maze" width="200"/>
   <img src="./ant/misc/gif/phi4.gif" alt="phi4" width="300"/>
 </p>
+#### specification phi5
 
-##### specification phi5
+To reach room(0,1)[purple] by reaching orange, yellow and green sequentially.
 
 <p float="left">
   <img src="./ant/misc/fig/phi5maze.png" alt="phi5maze" width="200"/>
