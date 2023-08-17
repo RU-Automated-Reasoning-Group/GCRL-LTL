@@ -57,114 +57,78 @@
     See scripts in `[project_base]/zones/experiments` for more details including specifying `eval_repeats` and `device`, etc.
 
 ### Examples
+* The left and right figures show the trajectory for solving avoidance task $\neg y U (j \wedge (\neg wUr))$.
 <figure>
 <p align='center'>
 <img src='./zones/assets/avoid_1.gif'  height=300 width=300>
 <img src='./zones/assets/avoid_2.gif'  height=300 width=300>
 <center>
-<figcaption> 
-The left figure shows the trajectory for solving <br>
-The right figure shows the trajectory for solving
-<hr>
-</figcaption>
-</center>
-</p>
+<hr><br>
 </figure>
 
+* The left and right figures show the trajectory for solving avoid more task $F((\neg y \wedge j) \wedge F(\neg y \wedge \neg w \wedge r))$.
 <figure>
 <p align='center'>
     <img src='./zones/assets/avoid_more_1.gif'  height=300 width=300>
     <img src='./zones/assets/avoid_more_2.gif'  height=300 width=300>
 </p>
 <center>
-<figcaption> 
-The left figure shows the trajectory for solving <br>
-The right figure shows the trajectory for solving
-<hr>
-</figcaption>
-</center>
+<hr><br>
 </figure>
 
+* The left and right figures show the trajectories for solving goal chaining task $F(j \wedge F(w \wedge F(r \wedge Fy)))$.
 <figure>
 <p align='center'>
     <img src='./zones/assets/chain_1.gif'  height=300 width=300>
     <img src='./zones/assets/chain_2.gif'  height=300 width=300>
 </p>
-<center>
-<figcaption> 
-The left figure shows the trajectory for solving <br>
-The right figure shows the trajectory for solving
-<hr>
-</figcaption>
-</center>
+<hr><br>
 </figure>
 
+* The left and right figures show the trajectories for solving traverse task $GF(r \wedge XF y) \wedge G(\neg w)$.
 <figure>
 <p align='center'>
     <img src='./zones/assets/traverse_1.gif'  height=300 width=300>
     <img src='./zones/assets/traverse_2.gif'  height=300 width=300>
 </p>
-<center>
-<figcaption> 
-The left figure shows the trajectory for solving <br>
-The right figure shows the trajectory for solving
-<hr>
-</figcaption>
-</center>
+<hr><br>
 </figure>
 
+* The left and right figures show the trajectories for solving stability task $FGy$.
 <figure>
 <p align='center'>
     <img src='./zones/assets/stable_1.gif'  height=300 width=300>
     <img src='./zones/assets/stable_2.gif'  height=300 width=300>
 </p>
-<center>
-<figcaption> 
-The left figure shows the trajectory for solving <br>
-The right figure shows the trajectory for solving
-<hr>
-</figcaption>
-</center>
+<hr><br>
 </figure>
 
+* The left figure shows the trajectory for solving task $F(j \wedge r)$.
+* The right figure shows the trajectory for solving task $F(j \wedge \neg r)$.
 <figure>
 <p align='center'>
     <img src='./zones/assets/intersect.gif'  height=300 width=300>
     <img src='./zones/assets/bypass.gif'  height=300 width=300>
 </p>
-<center>
-<figcaption> 
-The left figure shows the trajectory for solving <br>
-The right figure shows the trajectory for solving
-<hr>
-</figcaption>
-</center>
+<hr><br>
 </figure>
 
+* The left figure shows the trajectory for solving task $GFw \wedge GFy$.
+* The right figure shows the trajectory for solving task $GFw \wedge GFy \wedge G(\neg j)$
 <figure>
 <p align='center'>
     <img src='./zones/assets/round.gif'  height=300 width=300>
     <img src='./zones/assets/round_avoid.gif'  height=300 width=300>
 </p>
-<center>
-<figcaption> 
-The left figure shows the trajectory for solving <br>
-The right figure shows the trajectory for solving
-<hr>
-</figcaption>
-</center>
+<hr><br>
 </figure>
 
+* The figure shows the trajectory for solving avoid all task $Fj \wedge (\neg r \wedge  \neg y \wedge \neg w)Uj$
 <figure>
 <p align='center'>
     <img src='./zones/assets/avoid_all.gif'  height=300 width=300>
 </p>
-<center>
-<figcaption> 
-The figure shows the trajectory for solving <br>
-<hr>
-</figcaption>
-</center>
+<hr><br>
 </figure>
 
 ### References
