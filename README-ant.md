@@ -49,7 +49,7 @@ By combining these 4 items, people can generate specifications for testing.
 For example, specification phi2 (#10) means to reach the orange goal starting from blue by following either of the two orange dot lines.
 
 ```
-spec10  = seq(
+phi2  = seq(
 		choose(
             		ev(in_room((2, 0))),
             		ev(in_room((0, 2)))
