@@ -1,4 +1,4 @@
-# Instructing goal-conditioned agents with LTL Objectives
+# Instructing goal-conditioned agents with LTL objectives
 
 ## ZoneEnv
 
@@ -38,7 +38,7 @@
     ```
     [project_base]/zones/models/goal-conditioned/best_model_ppo_[N].zip
     ```
-    where `N` denotes the number of zones presents in the environment (8 by default).
+    where `N` denotes the number of zones present in the environment (8 by default).
 
 ### Experiments
 * Avoidance experiments e.g. $\neg y U (j \wedge (\neg wUr))$ (where $y$ for yellow, $j$ for jet-black, $w$ for white, and $r$ for red).
@@ -144,7 +144,7 @@
 
 ## Setup
 
-Environment for Ant16rooms experiment is developed mainly based on the following version of packages:
+The environment for the Ant16rooms experiment is based on the following version of the packages:
 ```
 	numpy=1.18.5
 	torch=1.5.1
@@ -160,9 +160,9 @@ along with MuJoCo simulator version `mujoco200` from [MuJoCo release website](ht
 	docker pull dibyaghosh/gcsl:0.1
 	```
 2. Conda
-	For conda environment setting-up, please refer to [conda_environment.yml](.\ant\environment\conda_environment.yml) for all specific version of packages.
+	For conda environment setting-up, please refer to [conda_environment.yml](.\ant\environment\conda_environment.yml) for all specific versions of packages.
 3. Python(pip)
-	For python pip packages, please refer to [python_requirement.txt](.\ant\environment\python_requirement.txt) for all specific version of packages.
+	For Python pip packages, please refer to [python_requirement.txt](.\ant\environment\python_requirement.txt) for all specific versions of packages.
 
 
 ## Run
@@ -202,7 +202,7 @@ $F(((0, 2) \vee (2, 0)) \wedge F(2, 2))$ - reaching room (2,2) [orange] by choos
 
 #### Specification phi3
 
-$F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F(3, 1))))$ - reaching room (3,1) [yellow] by visting orange first.
+$F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F(3, 1))))$ - reaching room (3,1) [yellow] by visiting orange first.
 
 <p float="left">
   <img src="./ant/misc/fig/phi3maze.png" alt="phi3maze" width="200"/>
