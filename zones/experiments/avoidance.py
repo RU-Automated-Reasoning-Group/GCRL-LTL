@@ -210,7 +210,6 @@ def main(args):
     eval_repeats = args.eval_repeats
     value_threshold = args.value_threshold
     device = torch.device(args.device)
-    formula = args.formula
     subtask_function_version = args.subtask_function_version
     max_timesteps = args.max_timesteps
 
@@ -283,7 +282,6 @@ def main(args):
             print('[EVAL][total success][{}][J success][{}][W success][{}][R success][{}][Y success][{}]'.format(num_success, num_J_success, num_W_success, num_R_success, num_Y_success))
             print('[num_dangerous]{}'.format(num_dangerous))
             print('[Discounted reward][{}]'.format(total_rewards/(i+1)))
-            sys.stdout.flush()
 
 
 if __name__ == '__main__':
@@ -297,7 +295,6 @@ if __name__ == '__main__':
     parser.add_argument('--eval_repeats', type=int, default=10)
     parser.add_argument('--value_threshold', type=float, default=0.85)
     parser.add_argument('--device', type=str, default='cpu')
-    parser.add_argument('--formula', type=str, default='')
     
     args = parser.parse_args()
 
