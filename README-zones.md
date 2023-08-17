@@ -3,7 +3,7 @@
 
 ## ZONES
 
-### Requirements
+### Setup
 * Using conda and install [spot](https://spot.lre.epita.fr), see also [this](https://anaconda.org/conda-forge/spot).
     ```bash
     conda install -c conda-forge spot
@@ -30,7 +30,7 @@
     ```bash
     python train_gc_policy.py
     ```
-### Evaluation
+### Models
 * Primitive action policies for navigating the `Point` robot are saved in:
     ```
     [project_base]/zones/models/primitives/*.zip
