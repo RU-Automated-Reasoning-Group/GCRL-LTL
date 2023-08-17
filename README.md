@@ -228,3 +228,11 @@ $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F((
   <img src="./ant/misc/fig/phi5maze.png" alt="phi5maze" height=250 width=250>
   <img src="./ant/misc/gif/phi5-cut.gif" alt="phi5" height=250 width=250>
 </p>
+
+#### Speccification with loop
+
+Do the  infinite loop on topright.
+
+<p align='center'>
+  <img src="./ant/misc/gif/phi_loop.gif" alt="phi_loop" height=250 width=250>
+</p>
