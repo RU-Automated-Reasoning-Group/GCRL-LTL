@@ -77,16 +77,6 @@ def task_function(env, model, goal_zone, avoid_zones, value_threshold=0.85, devi
     return num_success, eventual_reward
 
 
-def translate(GOALS, _AVOID_ZONES):
-
-    GOALS = [z.capitalize() for z in GOALS]
-    AVOID_ZONES = []
-    for Z in _AVOID_ZONES:
-        AVOID_ZONES.append([z.capitalize() for z in Z])
-    
-    return GOALS, AVOID_ZONES
-
-
 def experiment(args):
 
     seed = args.seed

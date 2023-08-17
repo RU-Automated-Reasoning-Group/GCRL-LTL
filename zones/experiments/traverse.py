@@ -70,8 +70,18 @@ def task_function(env, model, goals, avoid_zones, value_threshold=0.85, device=t
                 zone_index += 1
                 env.fix_goal(goal_zones[zone_index])
     
-    rounds = zone_index / 4
+    rounds = zone_index / 2
     return rounds
+
+
+def translate(GOALS, _AVOID_ZONES):
+
+    GOALS = [z.capitalize() for z in GOALS]
+    AVOID_ZONES = []
+    for Z in _AVOID_ZONES:
+        AVOID_ZONES.append([z.capitalize() for z in Z])
+    
+    return GOALS, AVOID_ZONES
 
 
 def experiment(args):
@@ -95,7 +105,8 @@ def experiment(args):
         for i in range(eval_repeats):
 
             # NOTE: GOAL CHAINING
-            GOALS = ['J', 'W', 'R', 'Y']
+            GOALS = ['R', 'Y']
+            AVOID = ['W']
 
             env = RandomGoalLTLNormalEnv(
                 env=gym.make('Zones-8-v1', map_seed=seed+int(time.time() * 1000000) % 100, timeout=10000000000),  # NOTE: dummy timeout
@@ -109,9 +120,7 @@ def experiment(args):
             )
             env.reset()
 
-            random.shuffle(GOALS)
-            print('GOALS', GOALS)
-            rounds = task_function(env, model, GOALS, [], value_threshold=value_threshold, device=device)
+            rounds = task_function(env, model, GOALS, AVOID, value_threshold=value_threshold, device=device)
             total_rounds += rounds
             print('-' * 30)
 
