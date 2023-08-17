@@ -207,8 +207,8 @@ $F(((0, 2) \vee (2, 0)) \wedge F(2, 2))$ - reaching room (2,2) [orange] by choos
 $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F(3, 1))))$ - reaching room (3,1) [yellow] by visiting orange first.
 
 <p align='center'>
-  <img src="./ant/misc/fig/phi3maze.png" alt="phi3maze" height=250 width=250/>
-  <img src="./ant/misc/gif/phi3.gif" alt="phi3" height=250 width=250/>
+  <img src="./ant/misc/fig/phi3maze.png" alt="phi3maze" height=250 width=250>
+  <img src="./ant/misc/gif/phi3.gif" alt="phi3" height=250 width=250>
 </p>
 
 #### Specification phi4
@@ -216,8 +216,8 @@ $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F(3
 $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F((3, 1) \wedge F(((1, 1) \vee (3, 3)) \wedge F(1, 3))))))$ - reaching room (1,3) [green] by visiting orange and yellow sequentially.
 
 <p align='center'>
-  <img src="./ant/misc/fig/phi4maze.png" alt="phi4maze" height=250 width=250/>
-  <img src="./ant/misc/gif/phi4.gif" alt="phi4" height=250 width=250/>
+  <img src="./ant/misc/fig/phi4maze.png" alt="phi4maze" height=250 width=250>
+  <img src="./ant/misc/gif/phi4.gif" alt="phi4" height=250 width=250>
 </p>
 
 #### Specification phi5
@@ -225,6 +225,6 @@ $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F((
 $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F((3, 1) \wedge F(((1, 1) \vee (3, 3)) \wedge F((1, 3) \wedge F(((1, 1) \vee (0, 3)) \wedge F(0, 1))))))))$ - reaching room (0,1) [purple] by visiting orange, yellow and green sequentially.
 
 <p align='center'>
-  <img src="./ant/misc/fig/phi5maze.png" alt="phi5maze" height=250 width=250/>
-  <img src="./ant/misc/gif/phi5.gif" alt="phi5" height=250 width=250/>
+  <img src="./ant/misc/fig/phi5maze.png" alt="phi5maze" height=250 width=250>
+  <img src="./ant/misc/gif/phi5.gif" alt="phi5" height=250 width=250>
 </p>
