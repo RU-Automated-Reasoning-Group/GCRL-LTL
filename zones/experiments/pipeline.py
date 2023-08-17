@@ -75,7 +75,7 @@ def reformat_ltl(formula):
     return f
 
 
-def ltl_subtask_v0(env, model, goal_zone, avoid_zones, seed, value_threshold=0.85, device=torch.device('cuda:0')):
+def ltl_subtask_v0(env, model, goal_zone, avoid_zones, seed, value_threshold=0.85, device=torch.device('cpu')):
 
     env.fix_goal(goal_zone)
     ob = env.current_observation()
@@ -136,7 +136,7 @@ def ltl_subtask_v0(env, model, goal_zone, avoid_zones, seed, value_threshold=0.8
     return (ob, 0, True, {}), {'complete': False, 'dangerous': False, 'reach_zone': None}
 
 
-def ltl_subtask_v1(env, model, goal_zone, avoid_zones, seed, value_threshold=0.85, device=torch.device('cuda:0')):
+def ltl_subtask_v1(env, model, goal_zone, avoid_zones, seed, value_threshold=0.85, device=torch.device('cpu')):
 
     env.fix_goal(goal_zone)
     ob = env.current_observation()
@@ -205,7 +205,6 @@ def ltl_subtask_v1(env, model, goal_zone, avoid_zones, seed, value_threshold=0.8
 def main(args):
 
     seed = args.seed
-    exp = args.exp
     temp = args.temp
     rl_model_path = args.rl_model_path
     eval_repeats = args.eval_repeats
@@ -223,8 +222,7 @@ def main(args):
     num_Y_success = 0
     num_dangerous = 0
     
-    if exp == 'avoid':
-        sampler = getLTLSampler('Until_1_2_1_1', ['J', 'W', 'R', 'Y'])
+    sampler = getLTLSampler('Until_1_2_1_1', ['J', 'W', 'R', 'Y'])
                                                                    
     if subtask_function_version == 'v0':
         subtask_function = ltl_subtask_v0
@@ -259,11 +257,12 @@ def main(args):
                 temperature=temp,
                 device=device,
                 max_timesteps=max_timesteps,
+                debug=True,
             )
             env.reset()
 
             for stage_index in range(len(GOALS)):
-                _, subtask_info = subtask_function(env, model, GOALS[stage_index], AVOID_ZONES[stage_index], value_threshold=value_threshold, seed=seed+i)
+                _, subtask_info = subtask_function(env, model, GOALS[stage_index], AVOID_ZONES[stage_index], value_threshold=value_threshold, seed=seed+i, device=device)
                 if subtask_info['complete']:
                     if subtask_info['reach_zone'] == 'J':
                         num_J_success += 1
@@ -290,7 +289,6 @@ def main(args):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--exp', type=str, default='avoid', choices=('avoid'))
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--temp', type=float, default=1.5)
     parser.add_argument('--max_timesteps', type=int, default=1000),
@@ -298,7 +296,7 @@ if __name__ == '__main__':
     parser.add_argument('--rl_model_path', type=str, default='models/goal-conditioned/best_model_ppo_8')
     parser.add_argument('--eval_repeats', type=int, default=10)
     parser.add_argument('--value_threshold', type=float, default=0.85)
-    parser.add_argument('--device', type=str, default='cuda:0')
+    parser.add_argument('--device', type=str, default='cpu')
     parser.add_argument('--formula', type=str, default='')
     
     args = parser.parse_args()
