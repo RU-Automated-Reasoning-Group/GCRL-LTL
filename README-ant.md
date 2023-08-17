@@ -36,7 +36,7 @@ export PYTHONPATH="${PYTHONPATH}:{path_of_GCRL-LTL_ant_folder}"
 python RRT_star/Testing_LTLSpecs_with_graph_ant16rooms.py ant16rooms {#ofspecification}
 ```
 specification phi1 to phi5 is corresponding to # 9 to 13 as input
-## To provide new spec 
+## To provide new specification
 
 ##### predication
 we keep on using 4 kind of precidation items which are used in [SPECTRL](https://github.com/keyshor/spectrl_tool):
