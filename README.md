@@ -185,10 +185,12 @@ specification phi1 to phi5 is corresponding to # 9 to 13 as input
 
 $F((0, 2) \vee (2, 0))$ - either reaching room (2,0) [orange position on the left] or room (0,2) [orange position on the right]
 
+<figure>
 <p align='center'>
-  <img src="./ant/misc/fig/phi1maze.png" alt="phi1maze" height=250 width=250/>
-  <img src="./ant/misc/gif/phi1.gif" alt="phi1" height=250 width=250/>
+  <img src="./ant/misc/fig/phi1maze.png" alt="phi1maze" height=250 width=250>
+  <img src="./ant/misc/gif/phi1.gif" alt="phi1" height=250 width=250>
 </p>
+</figure>
 
 
 #### Specification phi2
@@ -196,8 +198,8 @@ $F((0, 2) \vee (2, 0))$ - either reaching room (2,0) [orange position on the lef
 $F(((0, 2) \vee (2, 0)) \wedge F(2, 2))$ - reaching room (2,2) [orange] by choosing any of the two orange paths
 
 <p align='center'>
-  <img src="./ant/misc/fig/phi2maze.png" alt="phi2maze" height=250 width=250/>
-  <img src="./ant/misc/gif/phi2.gif" alt="phi2" height=250 width=250/>
+  <img src="./ant/misc/fig/phi2maze.png" alt="phi2maze" height=250 width=250>
+  <img src="./ant/misc/gif/phi2.gif" alt="phi2" height=250 width=250>
 </p>
 
 #### Specification phi3
