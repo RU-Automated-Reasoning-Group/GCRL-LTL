@@ -62,35 +62,35 @@ spec10  = seq(
 
 ##### specification phi1
 <p float="left">
-  <img src="./ant/misc/fig/phi1maze.png" alt="phi1maze" width="400"/>
-  <img src="./ant/misc/gif/phi1.gif" alt="phi1" width="500"/>
+  <img src="./ant/misc/fig/phi1maze.png" alt="phi1maze" width="200"/>
+  <img src="./ant/misc/gif/phi1.gif" alt="phi1" width="300"/>
 </p>
 
 
 ##### specification phi2
 
 <p float="left">
-  <img src="./ant/misc/fig/phi2maze.png" alt="phi2maze" width="400"/>
-  <img src="./ant/misc/gif/phi2.gif" alt="phi2" width="500"/>
+  <img src="./ant/misc/fig/phi2maze.png" alt="phi2maze" width="200"/>
+  <img src="./ant/misc/gif/phi2.gif" alt="phi2" width="300"/>
 </p>
 
 ##### specification phi3
 
 <p float="left">
-  <img src="./ant/misc/fig/phi3maze.png" alt="phi3maze" width="400"/>
-  <img src="./ant/misc/gif/phi3.gif" alt="phi3" width="500"/>
+  <img src="./ant/misc/fig/phi3maze.png" alt="phi3maze" width="200"/>
+  <img src="./ant/misc/gif/phi3.gif" alt="phi3" width="300"/>
 </p>
 
 ##### specification phi4
 
 <p float="left">
-  <img src="./ant/misc/fig/phi4maze.png" alt="phi4maze" width="400"/>
-  <img src="./ant/misc/gif/phi4.gif" alt="phi4" width="500"/>
+  <img src="./ant/misc/fig/phi4maze.png" alt="phi4maze" width="200"/>
+  <img src="./ant/misc/gif/phi4.gif" alt="phi4" width="300"/>
 </p>
 
 ##### specification phi5
 
 <p float="left">
-  <img src="./ant/misc/fig/phi5maze.png" alt="phi5maze" width="400"/>
-  <img src="./ant/misc/gif/phi5.gif" alt="phi5" width="500"/>
+  <img src="./ant/misc/fig/phi5maze.png" alt="phi5maze" width="200"/>
+  <img src="./ant/misc/gif/phi5.gif" alt="phi5" width="300"/>
 </p>
