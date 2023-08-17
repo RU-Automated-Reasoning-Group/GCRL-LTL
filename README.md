@@ -177,11 +177,11 @@ export PYTHONPATH="${PYTHONPATH}:{path_of_GCRL-LTL_ant_folder}"
 ```
 python RRT_star/Testing_LTLSpecs_with_graph_ant16rooms.py ant16rooms {#ofspecification}
 ```
-specification phi1 to phi5 is corresponding to # 9 to 13 as input
+specifications $\phi_1$ to $\phi_5$ are corresponding to # 9 to 13 as input
 
 ## Results
 
-#### Specification phi1
+#### Specification $\phi_1$
 
 $F((0, 2) \vee (2, 0))$ - either reaching room (2,0) [orange position on the left] or room (0,2) [orange position on the right]
 
@@ -193,7 +193,7 @@ $F((0, 2) \vee (2, 0))$ - either reaching room (2,0) [orange position on the lef
 </figure>
 
 
-#### Specification phi2
+#### Specification $\phi_2$
 
 $F(((0, 2) \vee (2, 0)) \wedge F(2, 2))$ - reaching room (2,2) [orange] by choosing any of the two orange paths
 
@@ -202,7 +202,7 @@ $F(((0, 2) \vee (2, 0)) \wedge F(2, 2))$ - reaching room (2,2) [orange] by choos
   <img src="./ant/misc/gif/phi2-cut.gif" alt="phi2" height=250 width=250>
 </p>
 
-#### Specification phi3
+#### Specification $\phi_3$
 
 $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F(3, 1))))$ - reaching room (3,1) [yellow] by visiting orange first.
 
@@ -211,7 +211,7 @@ $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F(3
   <img src="./ant/misc/gif/phi3-cut.gif" alt="phi3" height=250 width=250>
 </p>
 
-#### Specification phi4
+#### Specification $\phi_4$
 
 $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F((3, 1) \wedge F(((1, 1) \vee (3, 3)) \wedge F(1, 3))))))$ - reaching room (1,3) [green] by visiting orange and yellow sequentially.
 
@@ -220,7 +220,7 @@ $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F((
   <img src="./ant/misc/gif/phi4-cut.gif" alt="phi4" height=250 width=250>
 </p>
 
-#### Specification phi5
+#### Specification $\phi_5$
 
 $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F((3, 1) \wedge F(((1, 1) \vee (3, 3)) \wedge F((1, 3) \wedge F(((1, 1) \vee (0, 3)) \wedge F(0, 1))))))))$ - reaching room (0,1) [purple] by visiting orange, yellow and green sequentially.
 
@@ -229,9 +229,9 @@ $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F((
   <img src="./ant/misc/gif/phi5-cut.gif" alt="phi5" height=250 width=250>
 </p>
 
-#### Speccification with loop
+#### $\omega$-regular Specification $\phi_6$
 
-Do the  infinite loop on topright.
+$\varphi_1 \vee \varphi_2$ where $\varphi_1$ (the green path) is $GF((1, 0) ∧ X(F((1, 2) ∧ X(F(3, 2) ∧ XF(3, 0)))))$ and $\varphi_2$ (the orange path) is $F((0, 2) \wedge GF((2, 2) \wedge X(F((2, 3) \wedge X(F(3, 3) \wedge XF(3, 2))))))$ - the agent opts to iteratively traverse a small loop to satisfy the $\omega$-regular specification, although this loop is on a far-away end.
 
 <p align='center'>
 <img src="./ant/misc/fig/phi9maze.png" alt="phi9maze" height=250 width=250>
