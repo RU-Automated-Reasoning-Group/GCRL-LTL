@@ -18,9 +18,9 @@ along with MuJoCo simulator version `mujoco200` from [MuJoCo release website](ht
 	docker pull dibyaghosh/gcsl:0.1
 	```
 2. Conda
-	For conda environment setting-up, please refer to [conda_environment.yml](.\ant\misc\conda_environment.yml) for all specific version of packages.
+	For conda environment setting-up, please refer to [conda_environment.yml](.\ant\environment\conda_environment.yml) for all specific version of packages.
 3. Python(pip)
-	For python pip packages, please refer to [python_requirement.txt](.\ant\misc\python_requirement.txt) for all specific version of packages.
+	For python pip packages, please refer to [python_requirement.txt](.\ant\environment\python_requirement.txt) for all specific version of packages.
 	
 	
 ## Run
