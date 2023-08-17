@@ -1,5 +1,5 @@
 import doodad as dd
-import gcsl.doodad_utils as dd_utils
+import algo.doodad_utils as dd_utils
 import sys
 import matplotlib.pyplot as plt
 import gym
@@ -16,14 +16,14 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, samples
 
     # Envs
 
-    from gcsl import envs
-    from gcsl.envs.env_utils import DiscretizedActionEnv
+    import envs
+    from envs.env_utils import DiscretizedActionEnv
 
     # Algo
-    from gcsl.algo import buffer, gcsl, variants, networks
-    from RRT_star.algo import RRTStar_GCSL
-    from RRT_star.Graph import Graph
-    from RRT_star.v_function_core import value_policy
+    from algo import buffer, variants, networks
+    from algo.algo import RRTStar_GCSL
+    from algo.Graph import Graph
+    from algo.v_function_core import value_policy
     import pickle
     # from RRT_star import buffer
 
