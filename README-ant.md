@@ -30,24 +30,7 @@ Add workspace directory to PYTHONPATH:
 export PYTHONPATH="${PYTHONPATH}:{path_of_GCRL-LTL_ant_folder}"
 ```
 
-##### step1: Generate graph
-
-```
-python RRT_star/Generate_graph.py ant16rooms
-```
-
-##### step2: Finetune value policy
-
-```
-python RRT_star/Finetuning_with_graph.py ant16rooms
-```
-
-##### step3: reinforcement learning
-
-```
-python RRT_star/SL_rrts_tree.py ant16rooms {num_trajectories} {iterations_of_training}
-```
-##### step4: Testing with LTL specifications
+##### Testing with LTL specifications
 
 ```
 python RRT_star/Testing_LTLSpecs_with_graph_ant16rooms.py ant16rooms {#ofspecification}
@@ -62,8 +45,9 @@ ev, seq, choose, alw
 ```
 By combining these 4 items, people can generate specifications for testing.
 ##### Examples 
-<img src="./ant/misc/ant16roomsspecs.png" alt="ant16rooms" width="500"/>
+<img src="./ant/misc/ant16roomsspecs.png" alt="ant16rooms" width="300"/>
 For example, specification phi2 (#10) means to reach the orange goal starting from blue by following either of the two orange dot lines.
+
 ```
 spec10  = seq(
 			choose(
@@ -78,7 +62,7 @@ spec10  = seq(
 
 ##### specification phi1
 <p float="left">
-  <img src="./ant/misc/fig/phi1maze.png" alt="phi1maze" width="300"/>
+  <img src="./ant/misc/fig/phi1maze.png" alt="phi1maze" width="400"/>
   <img src="./ant/misc/gif/phi1.gif" alt="phi1" width="500"/>
 </p>
 
@@ -86,27 +70,27 @@ spec10  = seq(
 ##### specification phi2
 
 <p float="left">
-  <img src="./ant/misc/fig/phi2maze.png" alt="phi2maze" width="300"/>
+  <img src="./ant/misc/fig/phi2maze.png" alt="phi2maze" width="400"/>
   <img src="./ant/misc/gif/phi2.gif" alt="phi2" width="500"/>
 </p>
 
 ##### specification phi3
 
 <p float="left">
-  <img src="./ant/misc/fig/phi3maze.png" alt="phi3maze" width="300"/>
+  <img src="./ant/misc/fig/phi3maze.png" alt="phi3maze" width="400"/>
   <img src="./ant/misc/gif/phi3.gif" alt="phi3" width="500"/>
 </p>
 
 ##### specification phi4
 
 <p float="left">
-  <img src="./ant/misc/fig/phi4maze.png" alt="phi4maze" width="300"/>
+  <img src="./ant/misc/fig/phi4maze.png" alt="phi4maze" width="400"/>
   <img src="./ant/misc/gif/phi4.gif" alt="phi4" width="500"/>
 </p>
 
 ##### specification phi5
 
 <p float="left">
-  <img src="./ant/misc/fig/phi5maze.png" alt="phi5maze" width="300"/>
+  <img src="./ant/misc/fig/phi5maze.png" alt="phi5maze" width="400"/>
   <img src="./ant/misc/gif/phi5.gif" alt="phi5" width="500"/>
 </p>
