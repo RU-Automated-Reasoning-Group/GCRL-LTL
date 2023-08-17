@@ -38,7 +38,7 @@ python RRT_star/Testing_LTLSpecs_with_graph_ant16rooms.py ant16rooms {#ofspecifi
 specification phi1 to phi5 is corresponding to # 9 to 13 as input
 ## To provide new specification
 
-##### predication
+##### Predication items
 we keep on using 4 kind of precidation items which are used in [SPECTRL](https://github.com/keyshor/spectrl_tool):
 ```
 ev, seq, choose, alw
@@ -60,7 +60,7 @@ phi2  = seq(
 
 ## Specifications and results shown in gifs
 
-#### specification phi1
+#### Specification phi1
 
 Either to reach room(2,0)[orange position to the top] or room(0,2)[orange position to the right]
 
@@ -70,7 +70,7 @@ Either to reach room(2,0)[orange position to the top] or room(0,2)[orange positi
 </p>
 
 
-#### specification phi2
+#### Specification phi2
 
 To reach room(2,2)[orange] by choosing any of the two orange paths
 
@@ -79,7 +79,7 @@ To reach room(2,2)[orange] by choosing any of the two orange paths
   <img src="./ant/misc/gif/phi2.gif" alt="phi2" width="300"/>
 </p>
 
-#### specification phi3
+#### Specification phi3
 
 To reach room(3,1)[yellow] by reaching orange first.
 
@@ -88,7 +88,7 @@ To reach room(3,1)[yellow] by reaching orange first.
   <img src="./ant/misc/gif/phi3.gif" alt="phi3" width="300"/>
 </p>
 
-#### specification phi4
+#### Specification phi4
 
 To reach room(1,3)[green] by reaching orange and yellow sequentially.
 
@@ -97,7 +97,7 @@ To reach room(1,3)[green] by reaching orange and yellow sequentially.
   <img src="./ant/misc/gif/phi4.gif" alt="phi4" width="300"/>
 </p>
 
-#### specification phi5
+#### Specification phi5
 
 To reach room(0,1)[purple] by reaching orange, yellow and green sequentially.
 
