@@ -188,7 +188,7 @@ $F((0, 2) \vee (2, 0))$ - either reaching room (2,0) [orange position on the lef
 <figure>
 <p align='center'>
   <img src="./ant/misc/fig/phi1maze.png" alt="phi1maze" height=250 width=250>
-  <img src="./ant/misc/gif/phi1.gif" alt="phi1" height=250 width=250>
+  <img src="./ant/misc/gif/phi1-cut.gif" alt="phi1" height=250 width=250>
 </p>
 </figure>
 
@@ -199,7 +199,7 @@ $F(((0, 2) \vee (2, 0)) \wedge F(2, 2))$ - reaching room (2,2) [orange] by choos
 
 <p align='center'>
   <img src="./ant/misc/fig/phi2maze.png" alt="phi2maze" height=250 width=250>
-  <img src="./ant/misc/gif/phi2.gif" alt="phi2" height=250 width=250>
+  <img src="./ant/misc/gif/phi2-cut.gif" alt="phi2" height=250 width=250>
 </p>
 
 #### Specification phi3
@@ -208,7 +208,7 @@ $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F(3
 
 <p align='center'>
   <img src="./ant/misc/fig/phi3maze.png" alt="phi3maze" height=250 width=250>
-  <img src="./ant/misc/gif/phi3.gif" alt="phi3" height=250 width=250>
+  <img src="./ant/misc/gif/phi3-cut.gif" alt="phi3" height=250 width=250>
 </p>
 
 #### Specification phi4
@@ -217,7 +217,7 @@ $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F((
 
 <p align='center'>
   <img src="./ant/misc/fig/phi4maze.png" alt="phi4maze" height=250 width=250>
-  <img src="./ant/misc/gif/phi4.gif" alt="phi4" height=250 width=250>
+  <img src="./ant/misc/gif/phi4-cut.gif" alt="phi4" height=250 width=250>
 </p>
 
 #### Specification phi5
@@ -226,5 +226,5 @@ $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F((
 
 <p align='center'>
   <img src="./ant/misc/fig/phi5maze.png" alt="phi5maze" height=250 width=250>
-  <img src="./ant/misc/gif/phi5.gif" alt="phi5" height=250 width=250>
+  <img src="./ant/misc/gif/phi5-cut.gif" alt="phi5" height=250 width=250>
 </p>
