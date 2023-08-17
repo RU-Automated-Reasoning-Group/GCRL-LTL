@@ -185,9 +185,9 @@ specification phi1 to phi5 is corresponding to # 9 to 13 as input
 
 $F((0, 2) \vee (2, 0))$ - either reaching room (2,0) [orange position on the left] or room (0,2) [orange position on the right]
 
-<p float="left">
-  <img src="./ant/misc/fig/phi1maze.png" alt="phi1maze" width="200"/>
-  <img src="./ant/misc/gif/phi1.gif" alt="phi1" width="300"/>
+<p align='center'>
+  <img src="./ant/misc/fig/phi1maze.png" alt="phi1maze" height=250 width=250/>
+  <img src="./ant/misc/gif/phi1.gif" alt="phi1" height=250 width=250/>
 </p>
 
 
@@ -195,34 +195,34 @@ $F((0, 2) \vee (2, 0))$ - either reaching room (2,0) [orange position on the lef
 
 $F(((0, 2) \vee (2, 0)) \wedge F(2, 2))$ - reaching room (2,2) [orange] by choosing any of the two orange paths
 
-<p float="left">
-  <img src="./ant/misc/fig/phi2maze.png" alt="phi2maze" width="200"/>
-  <img src="./ant/misc/gif/phi2.gif" alt="phi2" width="300"/>
+<p align='center'>
+  <img src="./ant/misc/fig/phi2maze.png" alt="phi2maze" height=250 width=250/>
+  <img src="./ant/misc/gif/phi2.gif" alt="phi2" height=250 width=250/>
 </p>
 
 #### Specification phi3
 
 $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F(3, 1))))$ - reaching room (3,1) [yellow] by visiting orange first.
 
-<p float="left">
-  <img src="./ant/misc/fig/phi3maze.png" alt="phi3maze" width="200"/>
-  <img src="./ant/misc/gif/phi3.gif" alt="phi3" width="300"/>
+<p align='center'>
+  <img src="./ant/misc/fig/phi3maze.png" alt="phi3maze" height=250 width=250/>
+  <img src="./ant/misc/gif/phi3.gif" alt="phi3" height=250 width=250/>
 </p>
 
 #### Specification phi4
 
 $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F((3, 1) \wedge F(((1, 1) \vee (3, 3)) \wedge F(1, 3))))))$ - reaching room (1,3) [green] by visiting orange and yellow sequentially.
 
-<p float="left">
-  <img src="./ant/misc/fig/phi4maze.png" alt="phi4maze" width="200"/>
-  <img src="./ant/misc/gif/phi4.gif" alt="phi4" width="300"/>
+<p align='center'>
+  <img src="./ant/misc/fig/phi4maze.png" alt="phi4maze" height=250 width=250/>
+  <img src="./ant/misc/gif/phi4.gif" alt="phi4" height=250 width=250/>
 </p>
 
 #### Specification phi5
 
 $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F((3, 1) \wedge F(((1, 1) \vee (3, 3)) \wedge F((1, 3) \wedge F(((1, 1) \vee (0, 3)) \wedge F(0, 1))))))))$ - reaching room (0,1) [purple] by visiting orange, yellow and green sequentially.
 
-<p float="left">
-  <img src="./ant/misc/fig/phi5maze.png" alt="phi5maze" width="200"/>
-  <img src="./ant/misc/gif/phi5.gif" alt="phi5" width="300"/>
+<p align='center'>
+  <img src="./ant/misc/fig/phi5maze.png" alt="phi5maze" height=250 width=250/>
+  <img src="./ant/misc/gif/phi5.gif" alt="phi5" height=250 width=250/>
 </p>
