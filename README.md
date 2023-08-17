@@ -235,5 +235,5 @@ Do the  infinite loop on topright.
 
 <p align='center'>
 <img src="./ant/misc/fig/phi9maze.png" alt="phi9maze" height=250 width=250>
-  <img src="./ant/misc/gif/phi_loop.gif" alt="phi_loop" height=250 width=250>
+  <img src="./ant/misc/gif/phi_loop-cut.gif" alt="phi_loop" height=250 width=250>
 </p>
