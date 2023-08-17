@@ -62,7 +62,11 @@
 <img src='./zones/assets/avoid_1.gif'  height=300 width=300>
 <img src='./zones/assets/avoid_2.gif'  height=300 width=300>
 <center>
-<figcaption> Some caption</figcaption>
+<figcaption> 
+The left figure shows the trajectory for solving <br>
+The right figure shows the trajectory for solving
+<hr>
+</figcaption>
 </center>
 </p>
 </figure>
@@ -73,7 +77,11 @@
     <img src='./zones/assets/avoid_more_2.gif'  height=300 width=300>
 </p>
 <center>
-<figcaption> Some caption</figcaption>
+<figcaption> 
+The left figure shows the trajectory for solving <br>
+The right figure shows the trajectory for solving
+<hr>
+</figcaption>
 </center>
 </figure>
 
@@ -82,7 +90,13 @@
     <img src='./zones/assets/chain_1.gif'  height=300 width=300>
     <img src='./zones/assets/chain_2.gif'  height=300 width=300>
 </p>
-<figcaption aligh='center'> Some caption</figcaption>
+<center>
+<figcaption> 
+The left figure shows the trajectory for solving <br>
+The right figure shows the trajectory for solving
+<hr>
+</figcaption>
+</center>
 </figure>
 
 <figure>
@@ -91,7 +105,11 @@
     <img src='./zones/assets/traverse_2.gif'  height=300 width=300>
 </p>
 <center>
-<figcaption> Some caption</figcaption>
+<figcaption> 
+The left figure shows the trajectory for solving <br>
+The right figure shows the trajectory for solving
+<hr>
+</figcaption>
 </center>
 </figure>
 
@@ -101,7 +119,11 @@
     <img src='./zones/assets/stable_2.gif'  height=300 width=300>
 </p>
 <center>
-<figcaption> Some caption</figcaption>
+<figcaption> 
+The left figure shows the trajectory for solving <br>
+The right figure shows the trajectory for solving
+<hr>
+</figcaption>
 </center>
 </figure>
 
@@ -111,7 +133,11 @@
     <img src='./zones/assets/bypass.gif'  height=300 width=300>
 </p>
 <center>
-<figcaption> Some caption</figcaption>
+<figcaption> 
+The left figure shows the trajectory for solving <br>
+The right figure shows the trajectory for solving
+<hr>
+</figcaption>
 </center>
 </figure>
 
@@ -121,7 +147,11 @@
     <img src='./zones/assets/round_avoid.gif'  height=300 width=300>
 </p>
 <center>
-<figcaption> Some caption</figcaption>
+<figcaption> 
+The left figure shows the trajectory for solving <br>
+The right figure shows the trajectory for solving
+<hr>
+</figcaption>
 </center>
 </figure>
 
@@ -130,7 +160,10 @@
     <img src='./zones/assets/avoid_all.gif'  height=300 width=300>
 </p>
 <center>
-<figcaption> Some caption</figcaption>
+<figcaption> 
+The figure shows the trajectory for solving <br>
+<hr>
+</figcaption>
 </center>
 </figure>
 
