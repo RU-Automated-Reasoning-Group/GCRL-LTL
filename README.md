@@ -234,6 +234,6 @@ $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F((
 Do the  infinite loop on topright.
 
 <p align='center'>
-<img src="./ant/misc/gif/phi9maze.png" alt="phi9maze" height=250 width=250>
+<img src="./ant/misc/fig/phi9maze.png" alt="phi9maze" height=250 width=250>
   <img src="./ant/misc/gif/phi_loop.gif" alt="phi_loop" height=250 width=250>
 </p>
