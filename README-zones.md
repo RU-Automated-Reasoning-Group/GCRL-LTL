@@ -57,44 +57,82 @@
     See scripts in `[project_base]/zones/experiments` for more details including specifying `eval_repeats` and `device`, etc.
 
 ### Examples
+<figure>
 <p align='center'>
-    <img src='./zones/assets/avoid_1.gif'  height=300 width=300>
-    <img src='./zones/assets/avoid_2.gif'  height=300 width=300>
+<img src='./zones/assets/avoid_1.gif'  height=300 width=300>
+<img src='./zones/assets/avoid_2.gif'  height=300 width=300>
+<center>
+<figcaption> Some caption</figcaption>
+</center>
 </p>
+</figure>
 
+<figure>
 <p align='center'>
     <img src='./zones/assets/avoid_more_1.gif'  height=300 width=300>
     <img src='./zones/assets/avoid_more_2.gif'  height=300 width=300>
 </p>
+<center>
+<figcaption> Some caption</figcaption>
+</center>
+</figure>
 
+<figure>
 <p align='center'>
     <img src='./zones/assets/chain_1.gif'  height=300 width=300>
     <img src='./zones/assets/chain_2.gif'  height=300 width=300>
 </p>
+<figcaption aligh='center'> Some caption</figcaption>
+</figure>
 
+<figure>
 <p align='center'>
     <img src='./zones/assets/traverse_1.gif'  height=300 width=300>
     <img src='./zones/assets/traverse_2.gif'  height=300 width=300>
 </p>
+<center>
+<figcaption> Some caption</figcaption>
+</center>
+</figure>
 
+<figure>
 <p align='center'>
     <img src='./zones/assets/stable_1.gif'  height=300 width=300>
     <img src='./zones/assets/stable_2.gif'  height=300 width=300>
 </p>
+<center>
+<figcaption> Some caption</figcaption>
+</center>
+</figure>
 
+<figure>
 <p align='center'>
     <img src='./zones/assets/intersect.gif'  height=300 width=300>
     <img src='./zones/assets/bypass.gif'  height=300 width=300>
 </p>
+<center>
+<figcaption> Some caption</figcaption>
+</center>
+</figure>
 
+<figure>
 <p align='center'>
     <img src='./zones/assets/round.gif'  height=300 width=300>
     <img src='./zones/assets/round_avoid.gif'  height=300 width=300>
 </p>
+<center>
+<figcaption> Some caption</figcaption>
+</center>
+</figure>
 
+<figure>
 <p align='center'>
     <img src='./zones/assets/avoid_all.gif'  height=300 width=300>
 </p>
+<center>
+<figcaption> Some caption</figcaption>
+</center>
+</figure>
 
 ### References
 * spot, https://spot.lre.epita.fr
