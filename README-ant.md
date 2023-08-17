@@ -78,6 +78,7 @@ To reach room(2,2)[orange] by choosing any of the two orange paths
   <img src="./ant/misc/fig/phi2maze.png" alt="phi2maze" width="200"/>
   <img src="./ant/misc/gif/phi2.gif" alt="phi2" width="300"/>
 </p>
+
 #### specification phi3
 
 To reach room(3,1)[yellow] by reaching orange first.
@@ -86,6 +87,7 @@ To reach room(3,1)[yellow] by reaching orange first.
   <img src="./ant/misc/fig/phi3maze.png" alt="phi3maze" width="200"/>
   <img src="./ant/misc/gif/phi3.gif" alt="phi3" width="300"/>
 </p>
+
 #### specification phi4
 
 To reach room(1,3)[green] by reaching orange and yellow sequentially.
@@ -94,6 +96,7 @@ To reach room(1,3)[green] by reaching orange and yellow sequentially.
   <img src="./ant/misc/fig/phi4maze.png" alt="phi4maze" width="200"/>
   <img src="./ant/misc/gif/phi4.gif" alt="phi4" width="300"/>
 </p>
+
 #### specification phi5
 
 To reach room(0,1)[purple] by reaching orange, yellow and green sequentially.
