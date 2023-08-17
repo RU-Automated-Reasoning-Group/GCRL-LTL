@@ -10,7 +10,7 @@
     ```
 * Install [mujoco](https://www.roboti.us) and [mujoco-py](https://github.com/openai/mujoco-py). 
 * Install [safty-gym](https://github.com/openai/safety-gym).
-* Install required Python packages
+* Install required pip packages
     ```
     numpy
     torch
@@ -57,9 +57,47 @@
     See scripts in `[project_base]/zones/experiments` for more details including specifying `eval_repeats` and `device`, etc.
 
 ### Examples
+<p align='center'>
+    <img src='./zones/assets/avoid_1.gif'  height=300 width=300>
+    <img src='./zones/assets/avoid_2.gif'  height=300 width=300>
+</p>
 
+<p align='center'>
+    <img src='./zones/assets/avoid_more_1.gif'  height=300 width=300>
+    <img src='./zones/assets/avoid_more_2.gif'  height=300 width=300>
+</p>
+
+<p align='center'>
+    <img src='./zones/assets/chain_1.gif'  height=300 width=300>
+    <img src='./zones/assets/chain_2.gif'  height=300 width=300>
+</p>
+
+<p align='center'>
+    <img src='./zones/assets/traverse_1.gif'  height=300 width=300>
+    <img src='./zones/assets/traverse_2.gif'  height=300 width=300>
+</p>
+
+<p align='center'>
+    <img src='./zones/assets/stable_1.gif'  height=300 width=300>
+    <img src='./zones/assets/stable_2.gif'  height=300 width=300>
+</p>
+
+<p align='center'>
+    <img src='./zones/assets/intersect.gif'  height=300 width=300>
+    <img src='./zones/assets/bypass.gif'  height=300 width=300>
+</p>
+
+<p align='center'>
+    <img src='./zones/assets/round.gif'  height=300 width=300>
+    <img src='./zones/assets/round_avoid.gif'  height=300 width=300>
+</p>
+
+<p align='center'>
+    <img src='./zones/assets/avoid_all.gif'  height=300 width=300>
+</p>
 
 ### References
 * spot, https://spot.lre.epita.fr
 * LTL2Action, https://github.com/LTL2Action/LTL2Action
 * gltl2ba, https://github.com/PatrickTrentin88/gltl2ba
+* safety-gym, https://github.com/openai/safety-gym
