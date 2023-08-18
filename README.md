@@ -171,6 +171,7 @@ Add workspace directory to PYTHONPATH:
 ```
 export PYTHONPATH="${PYTHONPATH}:{path_of_GCRL-LTL_ant_folder}"
 ```
+We use the same primitive action policies `UP`, `DOWN`, `LEFT`, and `RIGHT` in `Ant 16 rooms` as `ZoneEnv` experiment uses.
 
 ##### Testing with LTL specifications
 
