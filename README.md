@@ -2,6 +2,8 @@
 
 ## ZoneEnv
 
+We use a robot from Safety Gym called Point, with one actuator for turning and another for moving forward or backward. An agent can observe the LiDAR information of its surrounding zones. Given this indirect geographical information, it has to visit and/or avoid certain zones to satisfy sampled LTL task specifications. The initial positions of the zones and the robot are random in every episode.
+
 ### Setup
 * Using conda and install [spot](https://spot.lre.epita.fr), see also [this](https://anaconda.org/conda-forge/spot).
     ```bash
@@ -141,6 +143,8 @@
 * safety-gym, https://github.com/openai/safety-gym
 
 ## Ant 16 rooms
+
+Ant-16rooms is an environment with continuous observation and action space. In this walled environment with 16 rooms, each room has the same size 8 × 8 divided by walls and corridors with a thickness of 1. There are two obstacles denoted by black squares in the environment. We place a Mujoco Ant robot in this environment for navigation.
 
 ## Setup
 
