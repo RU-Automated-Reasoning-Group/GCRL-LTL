@@ -233,6 +233,8 @@ $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F((
 
 $\varphi_1 \vee \varphi_2$ where $\varphi_1$ (the green path) is $GF((1, 0) ∧ X(F((3, 0) ∧ X(F(3, 2) ∧ XF(1, 2)))))$ and $\varphi_2$ (the orange path) is $F((0, 2) \wedge GF((2, 2) \wedge X(F((3, 2) \wedge X(F(3, 3) \wedge XF(2, 3))))))$ - the agent opts to iteratively traverse a small loop to satisfy the $\omega$-regular specification, although this loop is on a far-away end.
 
+By making the value got from v policy as the cost of edges in specification abstract graph, we select one of the optional path with smallest cost. Obviously, the smaller infinite loop have lower overall cost even it costs more to get into the loop than the bigger one.
+
 <p align='center'>
 <img src="./ant/misc/fig/phi9maze.png" alt="phi9maze" height=250 width=250>
   <img src="./ant/misc/gif/phi_loop-cut.gif" alt="phi_loop" height=250 width=250>
