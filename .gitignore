@@ -1,4 +1,6 @@
 .DS_Store
+*.gv
+*.pdf
 
 
 # Byte-compiled / optimized / DLL files
