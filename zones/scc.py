@@ -72,37 +72,3 @@ class SCC_Algorithm:
         path['ltl'] = ltl_path
 
         return path
-
-
-if __name__ == '__main__':
-
-    from types import SimpleNamespace
-    from ltl_cmd import gltl2ba
-
-    args = SimpleNamespace()
-    args.formula = '(! w) U ( r && ((! y) U j))'
-    args.formula = '(!p U d) && (!e U (q && (!n U a)))'
-    args.formula = '(! w) U ( r && ((! y) U j)) U (! y)'
-    args.formula = '<>b && a U b'
-    args.formula = '[](<>(o && X (<> (c && X<> d))))'
-    args.formula = 'GFa && GFb'
-    args.formula = '[]<>a && []<>b'
-    args.file = None
-
-    args.s = False
-    args.d = False
-    args.l = False
-    args.p = False
-    args.o = False
-    args.c = False
-    args.a = False
-
-    args.graph = False
-    args.output_graph = open('ba', 'w')
-    args.dot = False
-    args.output_dot = open('ba.gv', 'w')
-
-    graph = gltl2ba(args)
-    algo = SCC_Algorithm(graph=graph)
-    path = algo.search()
-    print(path)

@@ -6,7 +6,6 @@ import pygraphviz as pgv
 
 from ltl import gltl2ba
 from ltl_progression import progress, _get_spot_format
-from ltl_samplers import getLTLSampler
 
 
 def get_ltl_args(formula):
@@ -159,6 +158,7 @@ def path_finding(formula):
     formula = reformat_ltl(formula)
     ltl_args = get_ltl_args(formula=formula)
     graph = gltl2ba(ltl_args)
+    graph.save('test.png')
     algo_graph = AlgorithmGraph(graph=graph)
     algo = SCC_Algorithm(graph=algo_graph)
     path = algo.search()
@@ -168,27 +168,29 @@ def path_finding(formula):
 
 if __name__ == '__main__':
 
-    args = SimpleNamespace()
-    #args.formula = '(!p U d) && (!e U (q && (!n U a)))'
-    #args.formula = '<>((b || q) && <>((e || p) && <>m))'
-    args.formula = '<>((c || n) && <>(r && <>d)) && <>(q && <>((r || t) && <>m))'
-    args.file = None
-    args.s = False
-    args.d = False
-    args.l = False
-    args.p = False
-    args.o = False
-    args.c = False
-    args.a = False
+    # NOTE: good graphs    
+    formula = '(!p U d) && (!e U (q && (!n U a)))'
+    formula = '<>b && a U b'
+    formula = '!j U (w && (!y U r))'
+    
+    # NOTE: should handle || correctly
+    formula = '<>((b || q) && <>((e || p) && <>m))'  # NOTE: not the shortest path, check the graph again
+    formula = '<>((c || n) && <>(r && <>d)) && <>(q && <>((r || t) && <>m))'  # NOTE: graph is wrong
+    
+    formula = '(! w) U ( r && ((! y) U j)) U (! y)'  # NOTE: graph is wrong, absolutely wrong
+    formula = '[](<>(o && X (<> (c && X<> d))))'  # NOTE: graph is wrong, very strange graph
 
-    graph = gltl2ba(args)
-    graph.simplify()
-    graph.save('doki.png')
+    # NOTE: graph is wrong, but the task is wrong too...
+    # it is better we can handle this directly
+    formula = '(! w) U ( r && ((! y) U j))'  
+    
+    # NOTE: important, graph is good, no path
+    # should produce long sequences or goals
+    # should strictly follow start -> (scc)*
+    formula = 'GFa && GFb'
+    formula = '[]<>a && []<>b'
 
-    algo_graph = AlgorithmGraph(graph=graph)
-    algo = SCC_Algorithm(graph=algo_graph)
-    path = algo.search()
-    GOALS, AVOID_ZONES = parse_ltl_path(path['ltl'])
-    print(path)
-    print(GOALS, AVOID_ZONES)
+    goals, avoid_zones = path_finding(formula)
+    print(goals, avoid_zones)
+    
     
