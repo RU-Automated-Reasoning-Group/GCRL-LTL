@@ -8,6 +8,9 @@ from ltl import gltl2ba
 from ltl_progression import progress, _get_spot_format
 
 
+FOREVER = 100
+
+
 def get_ltl_args(formula):
     
     args = SimpleNamespace()
@@ -28,7 +31,18 @@ def get_ltl_args(formula):
     return args
 
 
-def parse_ltl_path(ltl_path, translation_function=None):
+def reformat_ltl(formula):
+    ltl = progress(formula, '')
+    ltl_spot = _get_spot_format(ltl)
+    f = spot.formula(ltl_spot)
+    f = spot.simplify(f)
+    f = str(f).replace('&', '&&').replace('"', '').replace('|', '||').lower()
+    f = f.replace('u', 'U').replace('f', '<>').replace('g', '[]').replace('x', 'X')
+
+    return f
+
+
+def ltl_to_zones(ltl, translation_function=None):
 
     if translation_function is None:
         def translate(word):
@@ -37,7 +51,7 @@ def parse_ltl_path(ltl_path, translation_function=None):
         translate = translation_function
 
     GOALS, AVOID_ZONES = [], []
-    for f in ltl_path:
+    for f in ltl:
         avoid_zones = []
         f = f.replace('(', '').replace(')', '').split('&&')
         f = [_f.strip() for _f in f]
@@ -54,17 +68,6 @@ def parse_ltl_path(ltl_path, translation_function=None):
         AVOID_ZONES.pop(all_index)
 
     return GOALS, AVOID_ZONES
-
-
-def reformat_ltl(formula):
-    ltl = progress(formula, '')
-    ltl_spot = _get_spot_format(ltl)
-    f = spot.formula(ltl_spot)
-    f = spot.simplify(f)
-    f = str(f).replace('&', '&&').replace('"', '').replace('|', '||').lower()
-    f = f.replace('u', 'U').replace('f', '<>').replace('g', '[]').replace('x', 'X')
-
-    return f
 
 
 class AlgorithmGraph:
@@ -118,7 +121,7 @@ class SCC_Algorithm:
                     self.SCCS.append([scc, accepting])
                     break
 
-    def DFS_path(self, start, goal_scc=None):
+    def DFS_search(self, start, goal_scc=None):
         for scc in self.SCCS:
             if scc[1]:
                 goal_scc = scc[0]
@@ -139,18 +142,49 @@ class SCC_Algorithm:
                 if 'init' in name:
                     v = name
         self.SCC_search(v)
-        path = self.DFS_path(v)
-        nodes_path = path['nodes']
-        ltl_path = []
-        for idx, node in enumerate(nodes_path[:-1]):
-            if idx < len(nodes_path) - 1:
-                next_node = nodes_path[idx+1]
-                edge_idx = self.graph.storage[node]['next'].index(next_node)
-                edge = self.graph.storage[node]['edges'][edge_idx]
-                ltl_path.append(edge)
-        path['ltl'] = ltl_path
+        info = self.DFS_search(v)
+        nodes, scc = info['nodes'], info['scc']
+        scc.reverse()
+        
+        ltl = []
+        if len(scc) == 1:
+            for idx, node in enumerate(nodes[:-1]):
+                if idx < len(nodes) - 1:
+                    next_node = nodes[idx+1]
+                    edge_idx = self.graph.storage[node]['next'].index(next_node)
+                    edge = self.graph.storage[node]['edges'][edge_idx]
+                    ltl.append(edge)
+        else:
+            # find the entry point to the scc
+            entry = None
+            for next_node in self.graph.storage[nodes[-1]]['next']:
+                if next_node in scc:
+                    entry = next_node
+            nodes.append(entry)
+            
+            # re-positioning scc
+            for idx, node in enumerate(nodes[:-1]):
+                if idx < len(nodes) - 1:
+                    next_node = nodes[idx+1]
+                    edge_idx = self.graph.storage[node]['next'].index(next_node)
+                    edge = self.graph.storage[node]['edges'][edge_idx]
+                    ltl.append(edge)
+            scc_ltl = []
+            entry_idx = scc.index(entry)
+            scc = scc[entry_idx:] + scc[:entry_idx] + [entry]
+            
+            # build the ltl
+            for idx, node in enumerate(scc):
+                if idx < len(scc) - 1:
+                    next_node = scc[idx+1 % len(scc)]
+                    edge_idx = self.graph.storage[node]['next'].index(next_node)
+                    edge = self.graph.storage[node]['edges'][edge_idx]
+                    if not '1' in edge:
+                        scc_ltl.append(edge)
 
-        return path
+            ltl = ltl + scc_ltl * FOREVER
+
+        return ltl
 
 
 def path_finding(formula):
@@ -161,9 +195,9 @@ def path_finding(formula):
     graph.save('test.png')
     algo_graph = AlgorithmGraph(graph=graph)
     algo = SCC_Algorithm(graph=algo_graph)
-    path = algo.search()
+    ltl = algo.search()
     
-    return parse_ltl_path(path['ltl'])
+    return ltl_to_zones(ltl)
 
 
 if __name__ == '__main__':
@@ -172,7 +206,11 @@ if __name__ == '__main__':
     formula = '(!p U d) && (!e U (q && (!n U a)))'
     formula = '<>b && a U b'
     formula = '!j U (w && (!y U r))'
-    
+    formula = 'Fa'
+    formula = 'GFa'
+    formula = 'GFa && GFb'
+    formula = '[]<>a && []<>b'
+
     # NOTE: should handle || correctly
     formula = '<>((b || q) && <>((e || p) && <>m))'  # NOTE: not the shortest path, check the graph again
     formula = '<>((c || n) && <>(r && <>d)) && <>(q && <>((r || t) && <>m))'  # NOTE: graph is wrong
@@ -182,15 +220,13 @@ if __name__ == '__main__':
 
     # NOTE: graph is wrong, but the task is wrong too...
     # it is better we can handle this directly
-    formula = '(! w) U ( r && ((! y) U j))'  
+    formula = '(! w) U ( r && ((! y) U j))'
     
-    # NOTE: important, graph is good, no path
-    # should produce long sequences or goals
-    # should strictly follow start -> (scc)*
-    formula = 'GFa && GFb'
-    formula = '[]<>a && []<>b'
-
+    # DEBUG
+    formula = '!j U (w && (!y U r))'
+    
     goals, avoid_zones = path_finding(formula)
-    print(goals, avoid_zones)
+    print('[GOALS]', goals)
+    print('[AVOID]', avoid_zones)
     
     
