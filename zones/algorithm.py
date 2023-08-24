@@ -190,8 +190,6 @@ class SCC_Algorithm:
 def path_finding(formula):
 
     formula = reformat_ltl(formula)
-    print(formula)
-    exit()
     ltl_args = get_ltl_args(formula=formula)
     graph = gltl2ba(ltl_args)
     graph.save('test.png')
@@ -204,32 +202,25 @@ def path_finding(formula):
 
 if __name__ == '__main__':
 
-    # NOTE: good graphs    
-    formula = '(!p U d) && (!e U (q && (!n U a)))'
-    formula = '<>b && a U b'
-    formula = '!j U (w && (!y U r))'
-    formula = 'Fa'
-    formula = 'GFa'
-    formula = 'GFa && GFb'
-    formula = '[]<>a && []<>b'
-
-    # NOTE: should handle || correctly
-    formula = '<>((b || q) && <>((e || p) && <>m))'  # NOTE: not the shortest path, check the graph again
-    formula = '<>((c || n) && <>(r && <>d)) && <>(q && <>((r || t) && <>m))'  # NOTE: graph is wrong
+    f1 = '(!p U d) && (!e U (q && (!n U a)))'
+    f2 = '<>b && a U b'
+    f3 = '!j U (w && (!y U r))'
+    f4 = 'Fa'
+    f5 = 'GFa'
+    f6 = 'GFa && GFb'
+    f7 = '[]<>a && []<>b'
+    f8 = 'GF(r && XF y) && G(!w)'
+    f9 = '[](<>(o && X (<> (c && X<> d))))'
+    f10 = '(! w) U ( r && ((! y) U j)) U (! y)'
+    f11 = '(! w) U ( r && ((! y) U j))'
+    f12 = '<>((b || q) && <>((e || p) && <>m))'
+    f13 = '<>((c || n) && <>(r && <>d)) && <>(q && <>((r || t) && <>m))'
     
-    formula = '(! w) U ( r && ((! y) U j)) U (! y)'  # NOTE: graph is wrong, absolutely wrong
-    formula = '[](<>(o && X (<> (c && X<> d))))'  # NOTE: graph is wrong, very strange graph
-
-    # NOTE: graph is wrong, but the task is wrong too...
-    # it is better we can handle this directly
-    formula = '(! w) U ( r && ((! y) U j))'
-    
-    # DEBUG
-    formula = 'GF(r && XF y) && G(!w)'
+    formula = f8
     print('[INPUT FORMULA]', formula)
     
     goals, avoid_zones = path_finding(formula)
-    #print('[GOALS]', goals)
-    #print('[AVOID]', avoid_zones)
+    print('[GOALS]', goals)
+    print('[AVOID]', avoid_zones)
     
     

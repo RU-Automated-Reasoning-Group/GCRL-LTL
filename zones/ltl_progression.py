@@ -96,7 +96,9 @@ def spotify(ltl_formula):
 
 
 def _get_spot_format(ltl_std):
-    ltl_spot = str(ltl_std).replace("(","").replace(")","").replace(",","")
+    # NOTE: why ?
+    #ltl_spot = str(ltl_std).replace("(","").replace(")","").replace(",","")
+    ltl_spot = ltl_std
     ltl_spot = ltl_spot.replace("'until'","U").replace("'not'","!").replace("'or'","|").replace("'and'","&")
     ltl_spot = ltl_spot.replace("'next'","X").replace("'eventually'","F").replace("'always'","G").replace("'True'","t").replace("'False'","f").replace("\'","\"")
     return ltl_spot
