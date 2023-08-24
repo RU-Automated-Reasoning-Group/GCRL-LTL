@@ -10,8 +10,8 @@ from stable_baselines3 import PPO
 
 from envs import ZonesEnv
 from ltl_wrappers import RandomGoalLTLNormalEnv
-from utils import get_named_goal_vector
 from ltl_samplers import getLTLSampler
+from utils import get_named_goal_vector
 from algorithm import reformat_ltl, path_finding
 
 
@@ -187,7 +187,7 @@ def main(args):
             stage_index = 0
             env = RandomGoalLTLNormalEnv(
                 env=gym.make('Zones-8-v1', map_seed=seed+i, timeout=10000000),  # NOTE: dummy timeout
-                primitives_path='./models/primitives',
+                primitives_path='models/primitives',
                 goals_representation=goals_representation, 
                 use_primitves=True,
                 temperature=temp,

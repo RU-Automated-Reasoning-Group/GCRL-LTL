@@ -11,12 +11,14 @@ from stable_baselines3 import PPO
 
 from envs import ZonesEnv
 from ltl_wrappers import RandomGoalLTLNormalEnv
+from ltl_samplers import getLTLSampler
 from utils import get_named_goal_vector
+from algorithm import reformat_ltl, path_finding
 
 
 def task_function(env, model, goals, avoid_zones, value_threshold=0.85, device=torch.device('cpu')):
 
-    goal_zones = goals * 100
+    goal_zones = goals
     zone_index = 0
     env.fix_goal(goal_zones[zone_index])
     ob = env.current_observation()
@@ -68,6 +70,8 @@ def task_function(env, model, goals, avoid_zones, value_threshold=0.85, device=t
 
             if info['zone'] == goal_zones[zone_index]:
                 zone_index += 1
+                if zone_index == len(goal_zones):
+                    break
                 env.fix_goal(goal_zones[zone_index])
     
     rounds = zone_index / 4
@@ -86,6 +90,7 @@ def experiment(args):
 
     model = PPO.load(rl_model_path, device=device)
     
+    sampler = getLTLSampler('Sequence_4_4', ['J', 'W', 'R', 'Y'])
     total_rounds = 0
     goals_representation = get_named_goal_vector()
 
@@ -94,9 +99,10 @@ def experiment(args):
         print('-' * 30)
         for i in range(eval_repeats):
 
-            # NOTE: GOAL CHAINING
-            GOALS = ['J', 'W', 'R', 'Y']
-
+            formula = sampler.sample()
+            formula = reformat_ltl(formula, sampled_formula=True)
+            GOALS, AVOID_ZONES = path_finding(formula)
+            
             env = RandomGoalLTLNormalEnv(
                 env=gym.make('Zones-8-v1', map_seed=seed+int(time.time() * 1000000) % 100, timeout=10000000000),  # NOTE: dummy timeout
                 primitives_path='models/primitives',
@@ -109,7 +115,6 @@ def experiment(args):
             )
             env.reset()
 
-            random.shuffle(GOALS)
             print('GOALS', GOALS)
             rounds = task_function(env, model, GOALS, [], value_threshold=value_threshold, device=device)
             total_rounds += rounds
