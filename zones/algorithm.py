@@ -5,7 +5,6 @@ import spot
 import pygraphviz as pgv
 
 from ltl import gltl2ba
-from ltl_progression import progress, get_spot_format, _get_spot_format
 
 
 FOREVER = 100
@@ -31,14 +30,8 @@ def get_ltl_args(formula):
     return args
 
 
-def reformat_ltl(formula, sampled_formula=False):
-    ltl = progress(formula, '')
-    if sampled_formula:
-        ltl_spot = _get_spot_format(ltl)
-    else:
-        ltl_spot = get_spot_format(ltl)
-    f = spot.formula(ltl_spot)
-    f = spot.simplify(f)
+def reformat_ltl(formula):
+    f = spot.formula(formula)
     f = str(f).replace('&', '&&').replace('"', '').replace('|', '||').lower()
     f = f.replace('u', 'U').replace('f', '<>').replace('g', '[]').replace('x', 'X')
 
@@ -172,6 +165,7 @@ class SCC_Algorithm:
                     edge_idx = self.graph.storage[node]['next'].index(next_node)
                     edge = self.graph.storage[node]['edges'][edge_idx]
                     ltl.append(edge)
+            
             scc_ltl = []
             entry_idx = scc.index(entry)
             scc = scc[entry_idx:] + scc[:entry_idx] + [entry]
