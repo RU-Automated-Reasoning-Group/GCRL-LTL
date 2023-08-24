@@ -5,7 +5,7 @@ import spot
 import pygraphviz as pgv
 
 from ltl import gltl2ba
-from ltl_progression import progress, _get_spot_format
+from ltl_progression import progress, get_spot_format, _get_spot_format
 
 
 FOREVER = 100
@@ -31,9 +31,12 @@ def get_ltl_args(formula):
     return args
 
 
-def reformat_ltl(formula):
+def reformat_ltl(formula, sampled_formula=False):
     ltl = progress(formula, '')
-    ltl_spot = _get_spot_format(ltl)
+    if sampled_formula:
+        ltl_spot = _get_spot_format(ltl)
+    else:
+        ltl_spot = get_spot_format(ltl)
     f = spot.formula(ltl_spot)
     f = spot.simplify(f)
     f = str(f).replace('&', '&&').replace('"', '').replace('|', '||').lower()
@@ -46,7 +49,7 @@ def ltl_to_zones(ltl, translation_function=None):
 
     if translation_function is None:
         def translate(word):
-            return word
+            return word.capitalize()
     else:
         translate = translation_function
 
@@ -192,7 +195,6 @@ def path_finding(formula):
     formula = reformat_ltl(formula)
     ltl_args = get_ltl_args(formula=formula)
     graph = gltl2ba(ltl_args)
-    graph.save('test.png')
     algo_graph = AlgorithmGraph(graph=graph)
     algo = SCC_Algorithm(graph=algo_graph)
     ltl = algo.search()

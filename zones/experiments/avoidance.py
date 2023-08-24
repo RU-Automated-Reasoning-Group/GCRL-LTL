@@ -6,73 +6,13 @@ sys.path.insert(0, sys.path[0]+"/../")
 import torch
 import gym
 import numpy as np
-import spot
 from stable_baselines3 import PPO
 
 from envs import ZonesEnv
 from ltl_wrappers import RandomGoalLTLNormalEnv
 from utils import get_named_goal_vector
-from scc import SCC_Algorithm
-from types import SimpleNamespace
-from ltl_cmd import gltl2ba
-from ltl_progression import progress, _get_spot_format
 from ltl_samplers import getLTLSampler
-
-
-def get_ltl_args(formula):
-    
-    args = SimpleNamespace()
-    args.formula = formula
-    args.file = None
-
-    args.s = False
-    args.d = False
-    args.l = False
-    args.p = False
-    args.o = False
-    args.c = False
-    args.a = False
-
-    args.graph = False
-    args.output_graph = open('ba_test', 'w')
-    args.dot = False
-    args.output_dot = open('ba_test.gv', 'w')
-
-    return args
-
-
-def parse_ltl_path(ltl_path, translation_function=None):
-
-    if translation_function is None:
-        def translate(word):
-            return word.upper()
-    else:
-        translate = translation_function
-
-    GOALS, AVOID_ZONES = [], []
-    for f in ltl_path:
-        avoid_zones = []
-        f = f.replace('(', '').replace(')', '').split('&')
-        f = [_f.strip() for _f in f]
-        for _f in f:
-            if '!' not in _f:
-                GOALS.append(translate(_f))
-            else:
-                avoid_zones.append(translate(_f.replace('!', '')))
-        AVOID_ZONES.append(avoid_zones)
-
-    return GOALS, AVOID_ZONES
-
-
-def reformat_ltl(formula):
-    ltl = progress(formula, '')
-    ltl_spot = _get_spot_format(ltl)
-    f = spot.formula(ltl_spot)
-    f = spot.simplify(f)
-    f = str(f).replace('&', '&&').replace('"', '').lower()
-    f = f.replace('u', 'U').replace('f', '<>').replace('g', '[]').replace('x', 'X')
-
-    return f
+from algorithm import reformat_ltl, path_finding
 
 
 def ltl_subtask_v0(env, model, goal_zone, avoid_zones, seed, value_threshold=0.85, device=torch.device('cpu')):
@@ -236,12 +176,9 @@ def main(args):
 
             random.seed(seed + i)
 
-            raw_formula = sampler.sample()
-            formula = reformat_ltl(raw_formula)
-            ltl_args = get_ltl_args(formula=formula)
-            graph = gltl2ba(ltl_args)
-            path = SCC_Algorithm(graph=graph).search()
-            GOALS, AVOID_ZONES = parse_ltl_path(path['ltl'])
+            formula = sampler.sample()
+            formula = reformat_ltl(formula, sampled_formula=True)
+            GOALS, AVOID_ZONES = path_finding(formula)
             
             print('+'*80)
             print('[ITERATION][{}]'.format(i))
