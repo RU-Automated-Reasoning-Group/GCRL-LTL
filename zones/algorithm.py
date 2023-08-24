@@ -190,6 +190,8 @@ class SCC_Algorithm:
 def path_finding(formula):
 
     formula = reformat_ltl(formula)
+    print(formula)
+    exit()
     ltl_args = get_ltl_args(formula=formula)
     graph = gltl2ba(ltl_args)
     graph.save('test.png')
@@ -223,10 +225,11 @@ if __name__ == '__main__':
     formula = '(! w) U ( r && ((! y) U j))'
     
     # DEBUG
-    formula = '!j U (w && (!y U r))'
+    formula = 'GF(r && XF y) && G(!w)'
+    print('[INPUT FORMULA]', formula)
     
     goals, avoid_zones = path_finding(formula)
-    print('[GOALS]', goals)
-    print('[AVOID]', avoid_zones)
+    #print('[GOALS]', goals)
+    #print('[AVOID]', avoid_zones)
     
     

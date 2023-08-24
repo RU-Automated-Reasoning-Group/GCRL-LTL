@@ -1,4 +1,3 @@
-from ltl_cmd import Graph
 
 
 class SCC_Algorithm:

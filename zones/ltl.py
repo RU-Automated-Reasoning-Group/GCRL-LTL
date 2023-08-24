@@ -165,7 +165,12 @@ class Ltl2baParser:
 
 def gltl2ba(args):
     
+    print(args.formula)
     ltl = get_ltl_formula(args.file, args.formula)
+    print(ltl)  # NOTE: check this out, important
+    # []!w && X([]<>r && <>y)
+    # G(!w) && X(GFr && Fy)
+    exit()
 
     (output, err, exit_code) = run_ltl2ba(args, ltl)
 
@@ -184,6 +189,7 @@ def gltl2ba(args):
 
 
 def get_ltl_formula(file, formula):
+    print(file, formula)
     assert file is not None or formula is not None
     if file:
         try:
