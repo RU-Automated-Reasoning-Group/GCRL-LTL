@@ -6,7 +6,7 @@ def reaching(env, model, goal_zones, total_avoid_zones, value_threshold=0.85, de
 
     zone_index = 0
     goal_zone = goal_zones[zone_index]
-    avoid_zones = total_avoid_zones[zone_index]  # may contain multiple zones
+    avoid_zones = total_avoid_zones[zone_index]
     env.fix_goal(goal_zone)
     ob = env.current_observation()
     zone_history = []
@@ -63,24 +63,23 @@ def reaching(env, model, goal_zones, total_avoid_zones, value_threshold=0.85, de
                 ob, reward, eval_done, info = env.step(action)
 
             current_zone = info['zone']
-
             if current_zone:
                 zone_history.append(current_zone)
+            else:
+                zone_history.append('+')
 
             if current_zone in avoid_zones:
                 task_history.append(current_zone)
                 print('[Dangerous !][reach {} avoid {}][overlap with {}]'.format(goal_zone, avoid_zones, info['zone']))
                 return {'complete': False, 'dangerous': True, 'zone_history': zone_history, 'task_history': task_history}
             
-            # NOTE: DEBUG, this doesn't work for chain
             elif current_zone == goal_zone:
                 task_history.append(current_zone)
                 zone_index += 1
                 if zone_index == len(goal_zones):
-                    break
+                    return {'complete': True, 'dangerous': False, 'zone_history': zone_history, 'task_history': task_history}
                 goal_zone = goal_zones[zone_index]
                 avoid_zones = total_avoid_zones[zone_index]
                 env.fix_goal(goal_zones[zone_index])
-                return {'complete': True, 'dangerous': False, 'zone_history': zone_history, 'task_history': task_history}
-
+                
     return {'complete': False, 'dangerous': False, 'zone_history': zone_history, 'task_history': task_history}

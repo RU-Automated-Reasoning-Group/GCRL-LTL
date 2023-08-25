@@ -24,5 +24,16 @@ class TaskSampler:
             for ap in aps:
                 sketch = sketch.replace('+', ap.lower(), 1)
 
+        elif self.task == 'stable':
+            sketch = 'GF+'
+            ap = random.choice(aps)
+            sketch = sketch.replace('+', ap.lower())
+
+        elif self.task == 'traverse':
+            sketch, num_ap = 'GF(+ && XF +) && G(!+)', 3
+            aps = random.sample(aps, k=num_ap)
+            for ap in aps:
+                sketch = sketch.replace('+', ap.lower(), 1)
+
         return sketch
         

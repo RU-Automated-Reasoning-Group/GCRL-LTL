@@ -5,7 +5,7 @@ import spot
 
 from algo.ltl import gltl2ba
 
-FOREVER = 100
+FOREVER = 10000
 
 
 def get_ltl_args(formula):
@@ -187,7 +187,6 @@ def path_finding(formula):
     formula = reformat_ltl(formula)
     ltl_args = get_ltl_args(formula=formula)
     graph = gltl2ba(ltl_args)
-    graph.save('debug.png')
     algo_graph = AlgorithmGraph(graph=graph)
     algo = SCC_Algorithm(graph=algo_graph)
     ltl = algo.search()
