@@ -2,10 +2,8 @@ from types import SimpleNamespace
 from collections import OrderedDict
 
 import spot
-import pygraphviz as pgv
 
-from ltl import gltl2ba
-
+from algo.ltl import gltl2ba
 
 FOREVER = 100
 
@@ -189,6 +187,7 @@ def path_finding(formula):
     formula = reformat_ltl(formula)
     ltl_args = get_ltl_args(formula=formula)
     graph = gltl2ba(ltl_args)
+    graph.save('debug.png')
     algo_graph = AlgorithmGraph(graph=graph)
     algo = SCC_Algorithm(graph=algo_graph)
     ltl = algo.search()
@@ -212,7 +211,7 @@ if __name__ == '__main__':
     f12 = '<>((b || q) && <>((e || p) && <>m))'
     f13 = '<>((c || n) && <>(r && <>d)) && <>(q && <>((r || t) && <>m))'
     
-    formula = f8
+    formula = f12
     print('[INPUT FORMULA]', formula)
     
     goals, avoid_zones = path_finding(formula)

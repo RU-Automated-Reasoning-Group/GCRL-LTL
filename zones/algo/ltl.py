@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-from graphviz import Digraph
 import pygraphviz as pgv
 from subprocess import Popen, PIPE
 import re

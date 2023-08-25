@@ -10,8 +10,8 @@ import numpy as np
 from stable_baselines3 import PPO
 
 from envs import ZonesEnv
-from ltl_wrappers import RandomGoalLTLNormalEnv
-from utils import get_named_goal_vector
+from zones.envs.task_envs import RandomGoalLTLNormalEnv
+from zones.envs.utils import get_named_goal_vector
 
 
 def task_function(env, model, goal_zone, avoid_zones, value_threshold=0.85, device=torch.device('cuda:0')):

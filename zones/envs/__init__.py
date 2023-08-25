@@ -1,13 +1,8 @@
 from gym.envs.registration import register
 
 from envs.safety.zones_env import ZonesEnv
+from envs.task_envs import ZonePrimitiveEnv, ZoneRandomGoalEnv
 
-
-### Simple LTL Envs
-register(
-    id='Simple-LTL-Env-v0',
-    entry_point='envs.gym_letters.simple_ltl_env:SimpleLTLEnvDefault'
-)
 
 ### Safety Envs
 register(

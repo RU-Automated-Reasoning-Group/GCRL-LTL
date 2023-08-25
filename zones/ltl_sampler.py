@@ -197,4 +197,3 @@ def getLTLSampler(sampler_id, propositions):
         return EventuallySampler(propositions, tokens[1], tokens[2], tokens[3], tokens[4])
     else: # "Default"
         return DefaultSampler(propositions)
-

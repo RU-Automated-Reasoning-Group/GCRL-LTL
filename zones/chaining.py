@@ -2,21 +2,21 @@ import argparse
 import random
 import time
 import sys
-sys.path.insert(0, sys.path[0]+"/../")
 
 import torch
 import gym
 import numpy as np
 from stable_baselines3 import PPO
 
-from envs import ZonesEnv
-from ltl_wrappers import RandomGoalLTLNormalEnv
-from utils import get_named_goal_vector
+from envs import ZonesEnv, ZoneRandomGoalEnv
+from envs.utils import get_named_goal_vector
+from algo import path_finding
+from sampler import TaskSampler
 
 
 def task_function(env, model, goals, avoid_zones, value_threshold=0.85, device=torch.device('cpu')):
 
-    goal_zones = goals * 100
+    goal_zones = goals
     zone_index = 0
     env.fix_goal(goal_zones[zone_index])
     ob = env.current_observation()
@@ -68,20 +68,12 @@ def task_function(env, model, goals, avoid_zones, value_threshold=0.85, device=t
 
             if info['zone'] == goal_zones[zone_index]:
                 zone_index += 1
+                if zone_index == len(goal_zones):
+                    break
                 env.fix_goal(goal_zones[zone_index])
     
-    rounds = zone_index / 2
+    rounds = zone_index / 4
     return rounds
-
-
-def translate(GOALS, _AVOID_ZONES):
-
-    GOALS = [z.capitalize() for z in GOALS]
-    AVOID_ZONES = []
-    for Z in _AVOID_ZONES:
-        AVOID_ZONES.append([z.capitalize() for z in Z])
-    
-    return GOALS, AVOID_ZONES
 
 
 def experiment(args):
@@ -98,17 +90,17 @@ def experiment(args):
     
     total_rounds = 0
     goals_representation = get_named_goal_vector()
+    sampler = TaskSampler(task='chain', aps=['J', 'W', 'R', 'Y'])
 
     with torch.no_grad():
 
         print('-' * 30)
         for i in range(eval_repeats):
 
-            # NOTE: GOAL CHAINING
-            GOALS = ['R', 'Y']
-            AVOID = ['W']
-
-            env = RandomGoalLTLNormalEnv(
+            formula = sampler.sample()
+            GOALS, AVOID_ZONES = path_finding(formula)
+            
+            env = ZoneRandomGoalEnv(
                 env=gym.make('Zones-8-v1', map_seed=seed+int(time.time() * 1000000) % 100, timeout=10000000000),  # NOTE: dummy timeout
                 primitives_path='models/primitives',
                 goals_representation=goals_representation, 
@@ -120,7 +112,8 @@ def experiment(args):
             )
             env.reset()
 
-            rounds = task_function(env, model, GOALS, AVOID, value_threshold=value_threshold, device=device)
+            print('GOALS', GOALS)
+            rounds = task_function(env, model, GOALS, AVOID_ZONES, value_threshold=value_threshold, device=device)
             total_rounds += rounds
             print('-' * 30)
 
@@ -129,13 +122,11 @@ def experiment(args):
 
 if __name__ == '__main__':
 
-    rl_model_path = 'models/goal-conditioned/best_model_ppo_8'
-    
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', type=int, default=123)
     parser.add_argument('--temp', type=float, default=1.5)
     parser.add_argument('--max_timesteps', type=int, default=1000000000),
-    parser.add_argument('--rl_model_path', type=str, default=rl_model_path)
+    parser.add_argument('--rl_model_path', type=str, default='models/goal-conditioned/best_model_ppo_8')
     parser.add_argument('--eval_repeats', type=int, default=20)
     parser.add_argument('--value_threshold', type=float, default=0.85)
     parser.add_argument('--device', type=str, default='cpu')
@@ -149,4 +140,3 @@ if __name__ == '__main__':
 
     rounds = experiment(args)
     print('{}'.format(rounds))
-
