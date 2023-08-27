@@ -5,7 +5,7 @@ import spot
 
 from algo.ltl import gltl2ba
 
-FOREVER = 10000
+FOREVER = 1000
 
 
 def get_ltl_args(formula):
@@ -139,32 +139,18 @@ class SCC_Algorithm:
         info = self.DFS_search(v)
         nodes, scc = info['nodes'], info['scc']
         scc.reverse()
-        
+
         ltl = []
-        if len(scc) == 1:
-            for idx, node in enumerate(nodes[:-1]):
-                if idx < len(nodes) - 1:
-                    next_node = nodes[idx+1]
-                    edge_idx = self.graph.storage[node]['next'].index(next_node)
-                    edge = self.graph.storage[node]['edges'][edge_idx]
-                    ltl.append(edge)
-        else:
-            # find the entry point to the scc
-            entry = None
-            for next_node in self.graph.storage[nodes[-1]]['next']:
-                if next_node in scc:
-                    entry = next_node
-            nodes.append(entry)
-            
-            # re-positioning scc
-            for idx, node in enumerate(nodes[:-1]):
-                if idx < len(nodes) - 1:
-                    next_node = nodes[idx+1]
-                    edge_idx = self.graph.storage[node]['next'].index(next_node)
-                    edge = self.graph.storage[node]['edges'][edge_idx]
-                    ltl.append(edge)
-            
+        for idx, node in enumerate(nodes[:-1]):
+            if idx < len(nodes) - 1:
+                next_node = nodes[idx+1]
+                edge_idx = self.graph.storage[node]['next'].index(next_node)
+                edge = self.graph.storage[node]['edges'][edge_idx]
+                ltl.append(edge)
+        
+        if len(scc) > 1:
             scc_ltl = []
+            entry = nodes[-1]
             entry_idx = scc.index(entry)
             scc = scc[entry_idx:] + scc[:entry_idx] + [entry]
             
@@ -176,7 +162,7 @@ class SCC_Algorithm:
                     edge = self.graph.storage[node]['edges'][edge_idx]
                     if not '1' in edge:
                         scc_ltl.append(edge)
-
+            
             ltl = ltl + scc_ltl * FOREVER
 
         return ltl
@@ -210,7 +196,7 @@ if __name__ == '__main__':
     f12 = '<>((b || q) && <>((e || p) && <>m))'
     f13 = '<>((c || n) && <>(r && <>d)) && <>(q && <>((r || t) && <>m))'
     
-    formula = f12
+    formula = f13
     print('[INPUT FORMULA]', formula)
     
     goals, avoid_zones = path_finding(formula)
