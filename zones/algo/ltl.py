@@ -31,7 +31,8 @@ class Graph:
         self.graph.graph_attr['label'] = title
 
     def node(self, name, label, accepting=False):
-        self.graph.add_node(name, label=label, shape='doublecircle' if accepting else 'circle')
+        self.graph.add_node(name, label=name, shape='doublecircle' if accepting else 'circle')
+        #self.graph.add_node(name, label=label, shape='doublecircle' if accepting else 'circle')
         if accepting:
             self.accepting_nodes.append(name)
 

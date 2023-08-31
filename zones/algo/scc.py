@@ -3,9 +3,12 @@ from collections import OrderedDict
 
 import spot
 
-from algo.ltl import gltl2ba
+#from algo.ltl import gltl2ba
+from ltl import gltl2ba
 
-FOREVER = 1000
+FOREVER = 10
+OMEGA = 5
+INF = 9999
 
 
 def get_ltl_args(formula):
@@ -64,7 +67,7 @@ def ltl_to_zones(ltl, translation_function=None):
     return GOALS, AVOID_ZONES
 
 
-class AlgorithmGraph:
+class SCCAlgorithmGraph:
     def __init__(self, graph):
         self.storage = OrderedDict()
         self.accepting_nodes = graph.accepting_nodes
@@ -77,13 +80,72 @@ class AlgorithmGraph:
                 self.storage[src]['edges'].append(f)
 
 
-class SCC_Algorithm:
-    def __init__(self, graph):
+class DijkstraAlgorithm:
+    def __init__(self, graph, scc):
         self.graph = graph
-        self.graph_keys = self.graph.storage.keys()
-        self.reset()
+        self.scc = scc
+        # graph nodes/edge information
+        self.storage = OrderedDict()
+        self.nodes = []
+        for node in self.graph.iternodes():
+            self.storage[node] = OrderedDict({'next': [], 'edges': []})
+            self.nodes.append(node)
+            for edge in self.graph.iteroutedges(node):
+                src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ')
+                self.storage[src]['next'].append(dst)
+                self.storage[src]['edges'].append(f)
+        self.graph_keys = self.storage.keys()
+    
+    def node_to_index(self, node):
+        return self.nodes.index(node)
+        
+    def reset(self, v):
+        # graph geological information
+        self.matrix = [[INF] * len(self.nodes) for _ in range(len(self.nodes))]
+        for node in self.nodes:
+            node_index = self.node_to_index(node)
+            row = self.matrix[node_index]
+            row[node_index] = 0
+            for edge in self.graph.iteroutedges(node):
+                src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ')
+                row[self.node_to_index(dst)] = 0 if f == '(1)' else 1
+        for e in self.matrix:
+            print(e)
+        exit()
+                
+        #self.storage[src]['weights'].append(0 if f == '(1)' else 0)  # NOTE: assume equal 1 weights for now
+        self.graph_keys = self.storage.keys()
+        self.visited = []
+        self.distance = OrderedDict(zip(self.graph_keys, [INF]*len(self.graph_keys)))
+        self.visited.append(v)
+        self.distance[v] = 0
 
-    def reset(self):
+    def find_nearest_node(self):
+        pass
+
+    def search(self, v=None):
+        
+        if v is None:
+            for name in self.graph_keys:
+                if 'init' in name:
+                    v = name
+        
+        self.reset(v)
+    
+        for node in self.graph.iternodes():
+            print('[NODE]', node)
+
+class SCCAlgorithm:
+    def __init__(self, graph):
+        self.storage = OrderedDict()
+        self.accepting_nodes = graph.accepting_nodes
+        for node in graph.iternodes():
+            self.storage[node] = OrderedDict({'next': [], 'edges': []})
+            for edge in graph.iteroutedges(node):
+                src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ')
+                self.storage[src]['next'].append(dst)
+                self.storage[src]['edges'].append(f)
+        self.graph_keys = self.storage.keys()
         self.visited = []
         self.stack = []
         self.time = 0
@@ -97,7 +159,7 @@ class SCC_Algorithm:
         self.time += 1
         self.lowlink[v] = self.d[v]
         self.stack.append(v)
-        for next_v in self.graph.storage[v]['next']:
+        for next_v in self.storage[v]['next']:
             if next_v not in self.visited:
                 self.SCC_search(next_v)
                 self.lowlink[v] = min(self.lowlink[v], self.lowlink[next_v])
@@ -108,18 +170,18 @@ class SCC_Algorithm:
             accepting = False
             while True:
                 x = self.stack.pop()
-                if x in self.graph.accepting_nodes:
+                if x in self.accepting_nodes:
                     accepting = True
                 scc.append(x)
                 if x == v:
                     self.SCCS.append([scc, accepting])
                     break
 
-    def DFS_search(self, start, goal_scc=None):
+    def DFS_search(self, v, goal_scc=None):
         for scc in self.SCCS:
             if scc[1]:
                 goal_scc = scc[0]
-        stack = [(start, [start])]
+        stack = [(v, [v])]
         visited = set()
         while stack:
             (vertex, path) = stack.pop()
@@ -127,7 +189,7 @@ class SCC_Algorithm:
                 if vertex in goal_scc:
                     return {'nodes': path, 'scc': goal_scc}
                 visited.add(vertex)
-                for neighbor in self.graph.storage[vertex]['next']:
+                for neighbor in self.storage[vertex]['next']:
                     stack.append((neighbor, path + [neighbor]))
         
     def search(self, v=None):
@@ -138,14 +200,15 @@ class SCC_Algorithm:
         self.SCC_search(v)
         info = self.DFS_search(v)
         nodes, scc = info['nodes'], info['scc']
+        print(scc)
         scc.reverse()
 
         ltl = []
         for idx, node in enumerate(nodes[:-1]):
             if idx < len(nodes) - 1:
                 next_node = nodes[idx+1]
-                edge_idx = self.graph.storage[node]['next'].index(next_node)
-                edge = self.graph.storage[node]['edges'][edge_idx]
+                edge_idx = self.storage[node]['next'].index(next_node)
+                edge = self.storage[node]['edges'][edge_idx]
                 ltl.append(edge)
         
         if len(scc) > 1:
@@ -158,8 +221,8 @@ class SCC_Algorithm:
             for idx, node in enumerate(scc):
                 if idx < len(scc) - 1:
                     next_node = scc[idx+1 % len(scc)]
-                    edge_idx = self.graph.storage[node]['next'].index(next_node)
-                    edge = self.graph.storage[node]['edges'][edge_idx]
+                    edge_idx = self.storage[node]['next'].index(next_node)
+                    edge = self.storage[node]['edges'][edge_idx]
                     if not '1' in edge:
                         scc_ltl.append(edge)
             
@@ -173,10 +236,14 @@ def path_finding(formula):
     formula = reformat_ltl(formula)
     ltl_args = get_ltl_args(formula=formula)
     graph = gltl2ba(ltl_args)
-    algo_graph = AlgorithmGraph(graph=graph)
-    algo = SCC_Algorithm(graph=algo_graph)
-    ltl = algo.search()
+    graph.save('test.png')
+    #algo = SCCAlgorithm(graph=graph)
+    #ltl = algo.search()
     
+    algo = DijkstraAlgorithm(graph=graph, scc=['accept_S6', 'T0_S6', 'T0_S7', 'accept_S2', 'T2_S1', 'T2_S7', 'T1_S2'])
+    algo.search()
+
+    exit()
     return ltl_to_zones(ltl)
 
 
@@ -196,11 +263,9 @@ if __name__ == '__main__':
     f12 = '<>((b || q) && <>((e || p) && <>m))'
     f13 = '<>((c || n) && <>(r && <>d)) && <>(q && <>((r || t) && <>m))'
     
-    formula = f13
+    formula = f9
     print('[INPUT FORMULA]', formula)
     
     goals, avoid_zones = path_finding(formula)
     print('[GOALS]', goals)
     print('[AVOID]', avoid_zones)
-    
-    
