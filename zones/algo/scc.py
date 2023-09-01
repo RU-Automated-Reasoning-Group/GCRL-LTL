@@ -69,8 +69,9 @@ def ltl_to_zones(ltl, translation_function=None):
 
 
 class PathFindingAlgorithm:
-    def __init__(self, graph):
+    def __init__(self, graph, path_type='direct'):
         self.graph = graph
+        self.path_type = path_type
         self.nodes = []
         self.storage = OrderedDict()
         for node in self.graph.iternodes():
@@ -86,7 +87,10 @@ class PathFindingAlgorithm:
         self.matrix = [[INF] * len(self.nodes) for _ in range(len(self.nodes))]
         for node in self.nodes:
             row = self.matrix[self.node_to_index(node)]
-            row[self.node_to_index(node)] = 0
+            if self.path_type == 'direct':
+                row[self.node_to_index(node)] = 0
+            elif self.path_type == 'loop':
+                row[self.node_to_index(node)] = INF
             for edge in self.graph.iteroutedges(node):
                 src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ')
                 row[self.node_to_index(dst)] = 0 if f == '(1)' else 1
@@ -97,49 +101,39 @@ class PathFindingAlgorithm:
     def index_to_node(self, index):
         return self.nodes[index]
     
-    def dijkstra(self, start_vertex, allow_self_transition=True):
+    def dijkstra(self, start_vertex):
         
         n_vertices = len(self.matrix[0])
- 
-        # shortest_distances[i] will hold the
-        # shortest distance from start_vertex to i
-        shortest_distances = [INF] * n_vertices
-    
+     
         # added[i] will true if vertex i is
         # included in shortest path tree
         # or shortest distance from start_vertex to
         # i is finalized
         added = [False] * n_vertices
     
-        # Initialize all distances as
-        # INFINITE and added[] as false
+        # Initialize all added[] as false
         for vertex_index in range(n_vertices):
-            shortest_distances[vertex_index] = INF
             added[vertex_index] = False
             
         # Distance of source vertex from
         # itself is always 0
-        if allow_self_transition:
+        if self.path_type == 'direct':
             shortest_distances[start_vertex] = 0
-        else:
+        elif self.path_type == 'loop':
             shortest_distances[start_vertex] = INF
 
-        # Parent array to store shortest
-        # path tree
+        shortest_distances = self.matrix[start_vertex]
+
+        # Parent array to store shortest path tree
         parents = [-1] * n_vertices
     
-        # The starting vertex does not
-        # have a parent
+        # The starting vertex does not have a parent
         parents[start_vertex] = NO_PARENT
     
-        # Find shortest path for all
-        # vertices
+        # Find shortest path for all vertices
         for i in range(1, n_vertices):
-            # Pick the minimum distance vertex
-            # from the set of vertices not yet
-            # processed. nearest_vertex is
-            # always equal to start_vertex in
-            # first iteration.
+            # Pick the minimum distance vertex from the set of vertices not yet processed
+            # nearest_vertex is always equal to start_vertex in first iteration.
             nearest_vertex = -1
             shortest_distance = INF
             for vertex_index in range(n_vertices):
@@ -147,17 +141,13 @@ class PathFindingAlgorithm:
                     nearest_vertex = vertex_index
                     shortest_distance = shortest_distances[vertex_index]
     
-            # Mark the picked vertex as
-            # processed
+            # Mark the picked vertex as processed
             added[nearest_vertex] = True
     
-            # Update dist value of the
-            # adjacent vertices of the
-            # picked vertex.
+            # Update dist value of the adjacent vertices of the picked vertex
             for vertex_index in range(n_vertices):
                 edge_distance = self.matrix[nearest_vertex][vertex_index]
                 
-                #if edge_distance > 0 and shortest_distance + edge_distance < shortest_distances[vertex_index]:
                 if shortest_distance + edge_distance < shortest_distances[vertex_index]:
                     parents[vertex_index] = nearest_vertex
                     shortest_distances[vertex_index] = shortest_distance + edge_distance
@@ -182,8 +172,8 @@ class PathFindingAlgorithm:
                 break
         assert not start_vertex is None
 
-        self.dijkstra(start_vertex, allow_self_transition=True)
-        
+        self.dijkstra(start_vertex)
+
         acc_paths = {}
         n_vertices = len(self.distances)
         for vertex_index in range(n_vertices):
@@ -196,111 +186,14 @@ class PathFindingAlgorithm:
     
     def get_loop_path(self, accepting_nodes):
 
+        loop_paths = {}
         for node in accepting_nodes:
-            self.dijkstra(start_vertex=self.node_to_index(node), allow_self_transition=False)
-
-    
-    def search_init_path(self, start):
+            node_index = self.node_to_index(node)
+            self.dijkstra(start_vertex=node_index)
+            path = self.get_path(node_index, self.parents, path=[])
+            loop_paths[node] = {'path': path, 'cost': self.distances[node_index]}
         
-        # graph geological information
-        self.matrix = [[INF] * len(self.nodes) for _ in range(len(self.nodes))]
-        for node in self.nodes:
-            row = self.matrix[self.node_to_index(node)]
-            row[self.node_to_index(node)] = 0
-            for edge in self.graph.iteroutedges(node):
-                src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ')
-                row[self.node_to_index(dst)] = 0 if f == '(1)' else 1
-        
-        # start search from T0_init
-        self.distance = OrderedDict(zip(self.graph_keys, self.matrix[self.node_to_index('T0_init')]))
-        self.parent = OrderedDict(zip(self.graph_keys, [None] * len(self.graph_keys)))
-        self.visited = []
-        
-        min_dis = None
-        min_dis_node = None
-        for _ in range(len(self.distance)):
-            sorted_distance = sorted(self.distance.items(), key=lambda item: item[1])
-            parent = OrderedDict(zip(self.graph_keys, [None] * len(self.graph_keys)))
-            #print(sorted_distance)
-            for node, dis in sorted_distance:
-                if node not in self.visited:
-                    min_dis_node = node
-                    min_dis = dis
-                    self.visited.append(node)
-                    break
-            #print(min_dis, min_dis_node, self.visited)
-            for i in range(len(self.matrix)):
-                d = self.matrix[self.node_to_index(min_dis_node)][i]
-                if d < INF:
-                    update = min_dis + d
-                    search_node = self.index_to_node(i)
-                    if self.distance[search_node] > update:
-                        self.distance[search_node] = update
-                        parent[search_node] = min_dis_node
-            print(parent)
-        exit()
-
-
-        print('[distance]', self.distance)
-        print('[parent]', self.parent)  # should record every node parents
-        
-        # path = []
-        # node = 'accept_S6'
-        # while True:
-        #     node = self.parent[node]
-        #     print('[SEARCH]', node)
-        #     if node == 'T0_init':
-        #         break
-        #     path.append(node)
-        # print(path)
-
-    def search_loop(self, v):
-        v = 'accept_S6'
-        # graph geological information
-        self.matrix = [[INF] * len(self.nodes) for _ in range(len(self.nodes))]
-        for node in self.nodes:
-            row = self.matrix[self.node_to_index(node)]
-            #row[self.node_to_index(node)] = 0  # NOTE: don't let self transition
-            for edge in self.graph.iteroutedges(node):
-                src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ')
-                row[self.node_to_index(dst)] = 0 if f == '(1)' else 1
-        # start from node v
-        self.distance = OrderedDict(zip(self.graph_keys, self.matrix[self.node_to_index(v)]))
-        self.parent = OrderedDict(zip(self.graph_keys, [None] * len(self.graph_keys)))
-        self.visited = []
-        
-        min_dis = None
-        min_dis_node = None
-        for _ in range(len(self.distance)):
-            sorted_distance = sorted(self.distance.items(), key=lambda item: item[1])
-            for node, dis in sorted_distance:
-                if node not in self.visited:
-                    min_dis_node = node
-                    min_dis = dis
-                    self.visited.append(node)
-                    break
-            for i in range(len(self.matrix)):
-                if self.matrix[self.node_to_index(min_dis_node)][i] < INF:
-                    update = min_dis + self.matrix[self.node_to_index(min_dis_node)][i]
-                    search_node = self.index_to_node(i)
-                    if self.distance[search_node] > update:
-                        self.distance[search_node] = update
-                        self.parent[search_node] = min_dis_node
-
-        print(self.distance)
-        print(self.parent)
-        path = []
-        node = v
-        while True:
-            node = self.parent[node]
-            if node is None:
-                break
-            path.append(node)
-        path.reverse()
-        path = [v] + path + [v]
-        print(path)
-        # NOTE: should search twice, p = init to acc, q = loop(acc)
-        exit()
+        return loop_paths
 
 
 class SCCAlgorithm:
@@ -376,19 +269,19 @@ def path_finding(formula):
     formula = reformat_ltl(formula)
     ltl_args = get_ltl_args(formula=formula)
     graph = gltl2ba(ltl_args)
-    graph.save('test.png')
     
     scc_algo = SCCAlgorithm(graph=graph)
     scc = scc_algo.search()
+    accepting_nodes=[node for node in scc if 'accept' in node]
     
-    path_algo = PathFindingAlgorithm(graph=graph)
-    acc_paths = path_algo.get_accepting_path(accepting_nodes=[node for node in scc if 'accept' in node])
-    print(acc_paths)
-    exit()
+    path_algo = PathFindingAlgorithm(graph=graph, path_type='direct')
+    acc_paths = path_algo.get_accepting_path(accepting_nodes=accepting_nodes)
+    print('[acc_paths]', acc_paths)
 
-    scc_graph = graph.build_sub_graph(nodes=scc)
-    loop_algo = LoopFindingAlgorithm(graph=graph)
-    loop_paths = loop_algo.get_accepting_loop()
+    scc_graph = graph.build_sub_graph(sub_graph_nodes=scc)
+    loop_algo = PathFindingAlgorithm(graph=scc_graph, path_type='loop')
+    loop_paths = loop_algo.get_loop_path(accepting_nodes=accepting_nodes)
+    print('[loop_paths]', loop_paths)
     
     exit()
     return ltl_to_zones(ltl)

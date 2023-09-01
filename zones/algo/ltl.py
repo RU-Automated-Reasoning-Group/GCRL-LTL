@@ -55,10 +55,13 @@ class Graph:
             if not 'init' in node and len(list(self.graph.iterinedges(node))) == 0:
                 self.graph.remove_node(node)
     
-    def build_sub_graph(self, nodes):
-        g = Graph()
-        # NOTE: under construction
-
+    def build_sub_graph(self, sub_graph_nodes):
+        all_nodes = list(self.graph.iternodes())
+        remove_nodes = [node for node in all_nodes if not node in sub_graph_nodes]
+        for node in remove_nodes:
+            self.remove_node(node)
+        
+        return self
 
     def save(self, path):
         self.graph.layout('dot')
@@ -84,6 +87,9 @@ class Graph:
 
     def remove_edge(self, *args):
         self.graph.remove_edge(*args)
+
+    def remove_node(self, *args):
+        self.graph.remove_node(*args)
 
 #
 # parser for ltl2ba output
