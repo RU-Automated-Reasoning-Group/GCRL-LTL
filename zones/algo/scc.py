@@ -3,12 +3,11 @@ from collections import OrderedDict
 
 import spot
 
-#from algo.ltl import gltl2ba
-from ltl import gltl2ba
+from algo.ltl import gltl2ba
 
 INF = 999
 NO_PARENT = -1
-FOREVER = 10
+FOREVER = 10000
 OMEGA = 5
 
 
@@ -66,134 +65,6 @@ def ltl_to_zones(ltl, translation_function=None):
         AVOID_ZONES.pop(all_index)
 
     return GOALS, AVOID_ZONES
-
-
-class PathFindingAlgorithm:
-    def __init__(self, graph, path_type='direct'):
-        self.graph = graph
-        self.path_type = path_type
-        self.nodes = []
-        self.storage = OrderedDict()
-        for node in self.graph.iternodes():
-            self.storage[node] = OrderedDict({'next': [], 'edges': []})
-            self.nodes.append(node)
-            for edge in self.graph.iteroutedges(node):
-                src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ')
-                self.storage[src]['next'].append(dst)
-                self.storage[src]['edges'].append(f)
-        self.build_matrix()
-
-    def build_matrix(self):
-        self.matrix = [[INF] * len(self.nodes) for _ in range(len(self.nodes))]
-        for node in self.nodes:
-            row = self.matrix[self.node_to_index(node)]
-            if self.path_type == 'direct':
-                row[self.node_to_index(node)] = 0
-            elif self.path_type == 'loop':
-                row[self.node_to_index(node)] = INF
-            for edge in self.graph.iteroutedges(node):
-                src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ')
-                row[self.node_to_index(dst)] = 0 if f == '(1)' else 1
-
-    def node_to_index(self, node):
-        return self.nodes.index(node)
-
-    def index_to_node(self, index):
-        return self.nodes[index]
-    
-    def dijkstra(self, start_vertex):
-        
-        n_vertices = len(self.matrix[0])
-     
-        # added[i] will true if vertex i is
-        # included in shortest path tree
-        # or shortest distance from start_vertex to
-        # i is finalized
-        added = [False] * n_vertices
-    
-        # Initialize all added[] as false
-        for vertex_index in range(n_vertices):
-            added[vertex_index] = False
-            
-        # Distance of source vertex from
-        # itself is always 0
-        if self.path_type == 'direct':
-            shortest_distances[start_vertex] = 0
-        elif self.path_type == 'loop':
-            shortest_distances[start_vertex] = INF
-
-        shortest_distances = self.matrix[start_vertex]
-
-        # Parent array to store shortest path tree
-        parents = [-1] * n_vertices
-    
-        # The starting vertex does not have a parent
-        parents[start_vertex] = NO_PARENT
-    
-        # Find shortest path for all vertices
-        for i in range(1, n_vertices):
-            # Pick the minimum distance vertex from the set of vertices not yet processed
-            # nearest_vertex is always equal to start_vertex in first iteration.
-            nearest_vertex = -1
-            shortest_distance = INF
-            for vertex_index in range(n_vertices):
-                if not added[vertex_index] and shortest_distances[vertex_index] < shortest_distance:
-                    nearest_vertex = vertex_index
-                    shortest_distance = shortest_distances[vertex_index]
-    
-            # Mark the picked vertex as processed
-            added[nearest_vertex] = True
-    
-            # Update dist value of the adjacent vertices of the picked vertex
-            for vertex_index in range(n_vertices):
-                edge_distance = self.matrix[nearest_vertex][vertex_index]
-                
-                if shortest_distance + edge_distance < shortest_distances[vertex_index]:
-                    parents[vertex_index] = nearest_vertex
-                    shortest_distances[vertex_index] = shortest_distance + edge_distance
-    
-        self.distances = shortest_distances
-        self.parents = parents
-
-    def get_path(self, current_vertex, parents, path):
-        if current_vertex == NO_PARENT:
-            return path
-        self.get_path(parents[current_vertex], parents, path)
-        path.append(self.index_to_node(current_vertex))
-        
-        return path
-
-    def get_accepting_path(self, accepting_nodes):
-        
-        start_vertex = None
-        for node in self.nodes:
-            if 'init' in node:
-                start_vertex = self.node_to_index(node)
-                break
-        assert not start_vertex is None
-
-        self.dijkstra(start_vertex)
-
-        acc_paths = {}
-        n_vertices = len(self.distances)
-        for vertex_index in range(n_vertices):
-            node = self.index_to_node(vertex_index)
-            if node in accepting_nodes:
-                path = self.get_path(vertex_index, self.parents, path=[])
-                acc_paths[node] = {'path': path, 'cost': self.distances[vertex_index]}
-        
-        return acc_paths
-    
-    def get_loop_path(self, accepting_nodes):
-
-        loop_paths = {}
-        for node in accepting_nodes:
-            node_index = self.node_to_index(node)
-            self.dijkstra(start_vertex=node_index)
-            path = self.get_path(node_index, self.parents, path=[])
-            loop_paths[node] = {'path': path, 'cost': self.distances[node_index]}
-        
-        return loop_paths
 
 
 class SCCAlgorithm:
@@ -264,11 +135,159 @@ class SCCAlgorithm:
         return scc
 
 
-def path_finding(formula):
+class PathFindingAlgorithm:
+    def __init__(self, graph, path_type='direct'):
+        self.graph = graph
+        assert path_type in ('direct', 'loop')
+        self.path_type = path_type
+        self.nodes = []
+        self.storage = OrderedDict()
+        for node in self.graph.iternodes():
+            self.storage[node] = OrderedDict({'next': [], 'edges': []})
+            self.nodes.append(node)
+            for edge in self.graph.iteroutedges(node):
+                src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ')
+                self.storage[src]['next'].append(dst)
+                self.storage[src]['edges'].append(f)
+        self.build_matrix()
+
+    def build_matrix(self):
+        self.matrix = [[INF] * len(self.nodes) for _ in range(len(self.nodes))]
+        for node in self.nodes:
+            row = self.matrix[self.node_to_index(node)]
+            if self.path_type == 'direct':
+                row[self.node_to_index(node)] = 0
+            elif self.path_type == 'loop':
+                row[self.node_to_index(node)] = INF
+            for edge in self.graph.iteroutedges(node):
+                src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ')
+                row[self.node_to_index(dst)] = 0 if f == '(1)' else 1
+
+    def node_to_index(self, node):
+        return self.nodes.index(node)
+
+    def index_to_node(self, index):
+        return self.nodes[index]
+    
+    def dijkstra(self, start_vertex):
+        
+        n_vertices = len(self.matrix[0])
+     
+        # added[i] will true if vertex i is
+        # included in shortest path tree
+        # or shortest distance from start_vertex to
+        # i is finalized
+        added = [False] * n_vertices
+    
+        # Initialize all added[] as false
+        for vertex_index in range(n_vertices):
+            added[vertex_index] = False
+            
+        # Distance of source vertex from itself is not always 0
+        shortest_distances = self.matrix[start_vertex]
+
+        # Parent array to store shortest path tree
+        parents = [-1] * n_vertices
+    
+        # The starting vertex does not have a parent
+        parents[start_vertex] = NO_PARENT
+    
+        # Find shortest path for all vertices
+        for i in range(1, n_vertices):
+            # Pick the minimum distance vertex from the set of vertices not yet processed
+            # nearest_vertex is always equal to start_vertex in first iteration.
+            nearest_vertex = -1
+            shortest_distance = INF
+            for vertex_index in range(n_vertices):
+                if not added[vertex_index] and shortest_distances[vertex_index] < shortest_distance:
+                    nearest_vertex = vertex_index
+                    shortest_distance = shortest_distances[vertex_index]
+    
+            # Mark the picked vertex as processed
+            added[nearest_vertex] = True
+    
+            # Update dist value of the adjacent vertices of the picked vertex
+            for vertex_index in range(n_vertices):
+                edge_distance = self.matrix[nearest_vertex][vertex_index]
+                
+                if shortest_distance + edge_distance < shortest_distances[vertex_index]:
+                    parents[vertex_index] = nearest_vertex
+                    shortest_distances[vertex_index] = shortest_distance + edge_distance
+    
+        self.start_vertex = start_vertex
+        self.distances = shortest_distances
+        self.parents = parents
+
+    def get_path(self, current_vertex, parents, path):
+        if current_vertex == NO_PARENT:
+            return path
+        self.get_path(parents[current_vertex], parents, path)
+        path.append(self.index_to_node(current_vertex))
+        
+        return path
+
+    def get_accepting_path(self, accepting_nodes):
+
+        assert self.path_type == 'direct'
+        
+        start_vertex = None
+        for node in self.nodes:
+            if 'init' in node:
+                start_vertex = self.node_to_index(node)
+                break
+        assert not start_vertex is None
+
+        self.dijkstra(start_vertex)
+
+        acc_paths = {}
+        n_vertices = len(self.distances)
+        for vertex_index in range(n_vertices):
+            node = self.index_to_node(vertex_index)
+            if node in accepting_nodes:
+                path = self.get_path(vertex_index, self.parents, path=[])
+                acc_paths[node] = {'path': path, 'cost': self.distances[vertex_index], 'ltl': self.build_ltl(path)}
+        
+        return acc_paths
+    
+    def get_loop_path(self, accepting_nodes):
+
+        assert self.path_type == 'loop'
+
+        loop_paths = {}
+        for node in accepting_nodes:
+            node_index = self.node_to_index(node)
+            self.dijkstra(start_vertex=node_index)
+            path = self.get_path(node_index, self.parents, path=[])
+            loop_paths[node] = {'path': path, 'cost': self.distances[node_index], 'ltl': self.build_ltl(path)}
+        
+        return loop_paths
+
+    def build_ltl(self, path):
+
+        if self.path_type == 'direct':
+            path = [self.index_to_node(self.start_vertex)] + path
+        elif self.path_type == 'loop':
+            path = [path[-1]] + path
+        
+        ltl = []
+        for p_idx, node in enumerate(path):
+                if p_idx == len(path) - 1:
+                    break
+                idx = self.storage[node]['next'].index(path[p_idx + 1])
+                f = self.storage[node]['edges'][idx]
+                if f != '(1)':
+                    ltl.append(f)
+
+        return ltl
+
+
+def path_finding(formula, debug=False):
 
     formula = reformat_ltl(formula)
     ltl_args = get_ltl_args(formula=formula)
     graph = gltl2ba(ltl_args)
+    if debug:
+        graph.save('graph.png')
     
     scc_algo = SCCAlgorithm(graph=graph)
     scc = scc_algo.search()
@@ -276,14 +295,30 @@ def path_finding(formula):
     
     path_algo = PathFindingAlgorithm(graph=graph, path_type='direct')
     acc_paths = path_algo.get_accepting_path(accepting_nodes=accepting_nodes)
-    print('[acc_paths]', acc_paths)
+    if debug:
+        print('[acc_paths]', acc_paths)
 
-    scc_graph = graph.build_sub_graph(sub_graph_nodes=scc)
-    loop_algo = PathFindingAlgorithm(graph=scc_graph, path_type='loop')
-    loop_paths = loop_algo.get_loop_path(accepting_nodes=accepting_nodes)
-    print('[loop_paths]', loop_paths)
-    
-    exit()
+    if len(scc) <= 1:
+        ltl = acc_paths[accepting_nodes[0]]['ltl']
+    else:
+        scc_graph = graph.build_sub_graph(sub_graph_nodes=scc)
+        loop_algo = PathFindingAlgorithm(graph=scc_graph, path_type='loop')
+        loop_paths = loop_algo.get_loop_path(accepting_nodes=accepting_nodes)
+        if debug:
+            scc_graph.save('scc_graph.png')
+            print('[loop_paths]', loop_paths)
+        
+        min_cost_acc_node = None
+        min_cost = INF
+
+        for node in accepting_nodes:
+            p_cost, q_cost = acc_paths[node]['cost'], loop_paths[node]['cost']
+            cost = p_cost + OMEGA * q_cost
+            if cost < min_cost:
+                min_cost_acc_node = node
+        
+        ltl = acc_paths[min_cost_acc_node]['ltl'] + loop_paths[min_cost_acc_node]['ltl'] * FOREVER
+
     return ltl_to_zones(ltl)
 
 
@@ -303,9 +338,9 @@ if __name__ == '__main__':
     f12 = '<>((b || q) && <>((e || p) && <>m))'
     f13 = '<>((c || n) && <>(r && <>d)) && <>(q && <>((r || t) && <>m))'
     
-    formula = f9
+    formula = f8
     print('[INPUT FORMULA]', formula)
     
-    goals, avoid_zones = path_finding(formula)
+    goals, avoid_zones = path_finding(formula, debug=True)
     print('[GOALS]', goals)
     print('[AVOID]', avoid_zones)
