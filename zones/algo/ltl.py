@@ -54,6 +54,11 @@ class Graph:
         for node in self.graph.iternodes():
             if not 'init' in node and len(list(self.graph.iterinedges(node))) == 0:
                 self.graph.remove_node(node)
+    
+    def build_sub_graph(self, nodes):
+        g = Graph()
+        # NOTE: under construction
+
 
     def save(self, path):
         self.graph.layout('dot')
