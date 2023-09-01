@@ -11,9 +11,8 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.callbacks import EvalCallback
 
-from envs import ZonesEnv
-from ltl_wrappers import RandomGoalLTLNormalEnv
-from utils import get_named_goal_vector
+from envs import ZonesEnv, ZoneRandomGoalEnv
+from envs.utils import get_named_goal_vector
 
 
 def main(args):
@@ -27,9 +26,9 @@ def main(args):
     exp_name = args.exp_name
     execution_mode = args.execution_mode
 
-    env_fn = lambda: RandomGoalLTLNormalEnv(
+    env_fn = lambda: ZoneRandomGoalEnv(
         env=gym.make('Zones-8-v0', timeout=timeout), 
-        primitives_path='./models/primitives', 
+        primitives_path='models/primitives', 
         goals_representation=get_named_goal_vector(),
         use_primitves=True if execution_mode == 'primitives' else False,
         rewards=[0, 1],
@@ -52,14 +51,14 @@ def main(args):
             device=device,
         )
 
-        log_path = "./logs/ppo/{}/".format(exp_name)
+        log_path = "logs/ppo/{}/".format(exp_name)
         new_logger = configure(log_path, ["stdout", "csv"])
         model.set_logger(new_logger)
 
-        eval_log_path = "./logs/ppo_eval/{}/".format(exp_name)
-        eval_env_fn = lambda: RandomGoalLTLNormalEnv(
+        eval_log_path = "logs/ppo_eval/{}/".format(exp_name)
+        eval_env_fn = lambda: ZoneRandomGoalEnv(
             env=gym.make('Zones-8-v0', timeout=1000), 
-            primitives_path='./models/primitives', 
+            primitives_path='models/primitives', 
             goals_representation=get_named_goal_vector(),
             use_primitves=True if execution_mode == 'primitives' else False,
             rewards=[-0.001, 1],
@@ -75,7 +74,7 @@ def main(args):
         )
     
     model.learn(total_timesteps=total_timesteps, callback=eval_callback)
-    model.save('./{}_{}_model'.format(algo, seed))
+    model.save('{}_{}_model'.format(algo, seed))
 
 
 if __name__ == '__main__':

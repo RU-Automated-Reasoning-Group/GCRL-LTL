@@ -193,11 +193,3 @@ class ZonesEnv8(LTLZonesEnv):
 class ZonesEnv8Fixed(LTLZonesEnv):
     def __init__(self, map_seed, timeout=1000):
         super().__init__(zones=[zone.JetBlack, zone.JetBlack, zone.Red, zone.Red, zone.White, zone.White,  zone.Yellow, zone.Yellow], use_fixed_map=True, timeout=timeout, map_seed=map_seed)
-
-class ZonesEnv8(LTLZonesEnv):
-    def __init__(self, timeout=1000):
-        super().__init__(zones=[zone.JetBlack, zone.Red, zone.White, zone.Yellow], use_fixed_map=True, timeout=timeout)
-        
-class ZonesEnv8Fixed(LTLZonesEnv):
-    def __init__(self, map_seed, timeout=1000):
-        super().__init__(zones=[zone.JetBlack, zone.Red, zone.White, zone.Yellow], use_fixed_map=True, timeout=timeout, map_seed=map_seed)

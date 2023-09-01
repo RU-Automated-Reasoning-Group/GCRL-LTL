@@ -7,8 +7,7 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.env_util import make_vec_env
 
-from envs import ZonesEnv
-from ltl_wrappers import ZonePrimitiveEnv
+from envs import ZonesEnv, ZonePrimitiveEnv
 
 
 def main(args):

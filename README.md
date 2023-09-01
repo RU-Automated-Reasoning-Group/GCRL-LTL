@@ -47,21 +47,21 @@ We use a robot from Safety Gym called Point, with one actuator for turning and a
 ### Experiments
 * Avoidance experiments e.g. $\neg y U (j \wedge (\neg wUr))$ (where $y$ for yellow, $j$ for jet-black, $w$ for white, and $r$ for red).
     ```bash
-    python experiments/avoidance.py
+    python exp.py --task='avoid'
     ```
 * Loop experiments e.g. $GF(r \wedge XF y) \wedge G(\neg w)$
-    ```
-    python experiments/traverse.py
+    ```bash
+    python exp.py --task='traverse'
     ```
 * Goal-chaining experiments e.g. $F(j \wedge F(w \wedge F(r \wedge Fy)))$
     ```bash
-    python experiments/chaining.py
+    python exp.py --task='chain'
     ```
 * Stability experiments e.g $FGy$
     ```bash
-    python experiments/stable.py
+    python exp.py --task='stable'
     ```
-    See scripts in `[project_base]/zones/experiments/` for more details including specifying `eval_repeats` and `device`, etc.
+    See scripts in `[project_base]/zones/exp.py` for more details including specifying `eval_repeats` and `device`, etc.
 
 ### Examples
 * The left and right figures show the trajectory for the task $\neg y U (j \wedge (\neg wUr))$.
