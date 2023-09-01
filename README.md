@@ -47,19 +47,19 @@ We use a robot from Safety Gym called Point, with one actuator for turning and a
 ### Experiments
 * Avoidance experiments e.g. $\neg y U (j \wedge (\neg wUr))$ (where $y$ for yellow, $j$ for jet-black, $w$ for white, and $r$ for red).
     ```bash
-    python experiments/avoidance.py
+    python exp.py --task='avoid'
     ```
 * Loop experiments e.g. $GF(r \wedge XF y) \wedge G(\neg w)$
-    ```
-    python experiments/traverse.py
+    ```bash
+    python exp.py --task='traverse'
     ```
 * Goal-chaining experiments e.g. $F(j \wedge F(w \wedge F(r \wedge Fy)))$
     ```bash
-    python experiments/chaining.py
+    python exp.py --task='chain'
     ```
 * Stability experiments e.g $FGy$
     ```bash
-    python experiments/stable.py
+    python exp.py --task='stable'
     ```
     See scripts in `[project_base]/zones/experiments/` for more details including specifying `eval_repeats` and `device`, etc.
 
@@ -177,7 +177,6 @@ Add workspace directory to PYTHONPATH:
 ```
 export PYTHONPATH="${PYTHONPATH}:{path_of_GCRL-LTL_ant_folder}"
 ```
-We use the same primitive action policies `UP`, `DOWN`, `LEFT`, and `RIGHT` in `Ant 16 rooms` as `ZoneEnv` experiment uses.
 
 ##### Testing with LTL specifications
 
@@ -239,8 +238,6 @@ $F(((0, 2) \vee (2, 0)) \wedge F((2, 2) \wedge F(((2, 1) \vee (3, 2)) \wedge F((
 #### $\omega$-Regular Specification $\phi_6$
 
 $\varphi_1 \vee \varphi_2$ where $\varphi_1$ (the green path) is $GF((1, 0) ∧ X(F((3, 0) ∧ X(F(3, 2) ∧ XF(1, 2)))))$ and $\varphi_2$ (the orange path) is $F((0, 2) \wedge GF((2, 2) \wedge X(F((3, 2) \wedge X(F(3, 3) \wedge XF(2, 3))))))$ - the agent opts to iteratively traverse a small loop to satisfy the $\omega$-regular specification, although this loop is on a far-away end.
-
-By making the value got from $V$ policy as the cost of edges in specification abstract graph, we select one of the optional path with smallest cost. Obviously, the smaller infinite loop have lower overall cost even it costs more to get into the loop than the bigger one.
 
 <p align='center'>
 <img src="./ant/misc/fig/phi9maze.png" alt="phi9maze" height=250 width=250>
