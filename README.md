@@ -61,7 +61,7 @@ We use a robot from Safety Gym called Point, with one actuator for turning and a
     ```bash
     python exp.py --task='stable'
     ```
-    See scripts in `[project_base]/zones/experiments/` for more details including specifying `eval_repeats` and `device`, etc.
+    See script `[project_base]/zones/exp.py` for more details including specifying `eval_repeats` and `device`, etc.
 
 ### Examples
 * The left and right figures show the trajectory for the task $\neg y U (j \wedge (\neg wUr))$.
