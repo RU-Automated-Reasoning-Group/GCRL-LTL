@@ -10,6 +10,7 @@ We use a robot from Safety Gym called Point, with one actuator for turning and a
 * Using conda and install [spot](https://spot.lre.epita.fr), see also [this](https://anaconda.org/conda-forge/spot).
     ```bash
     conda install -c conda-forge spot
+    conda install -c conda-forge pygraphviz
     ```
 * Install [mujoco](https://www.roboti.us) and [mujoco-py](https://github.com/openai/mujoco-py).
 * Install [safty-gym](https://github.com/openai/safety-gym).
@@ -19,7 +20,6 @@ We use a robot from Safety Gym called Point, with one actuator for turning and a
     torch
     stable-baslines3
     graphviz
-    pygraphviz
     gym
     mujoco-py
     ```

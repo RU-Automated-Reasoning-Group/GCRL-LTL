@@ -3,11 +3,12 @@ from collections import OrderedDict
 
 import spot
 
-from algo.ltl import gltl2ba
+#from algo.ltl import gltl2ba
+from ltl import gltl2ba
 
 INF = 999
 NO_PARENT = -1
-FOREVER = 10000
+FOREVER = 10
 OMEGA = 5
 
 
@@ -288,6 +289,12 @@ def path_finding(formula, debug=False):
     graph = gltl2ba(ltl_args)
     if debug:
         graph.save('graph.png')
+
+    from ltl import PathGraph
+    path_graph = PathGraph()
+    path_graph.build(graph)
+    path_graph.save('debug.png')
+    exit()
     
     scc_algo = SCCAlgorithm(graph=graph)
     scc = scc_algo.search()
@@ -338,7 +345,7 @@ if __name__ == '__main__':
     f12 = '<>((b || q) && <>((e || p) && <>m))'
     f13 = '<>((c || n) && <>(r && <>d)) && <>(q && <>((r || t) && <>m))'
     
-    formula = f8
+    formula = f9
     print('[INPUT FORMULA]', formula)
     
     goals, avoid_zones = path_finding(formula, debug=True)

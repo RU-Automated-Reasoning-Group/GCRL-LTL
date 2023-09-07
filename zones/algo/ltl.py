@@ -2,6 +2,8 @@ import pygraphviz as pgv
 from subprocess import Popen, PIPE
 import re
 import sys
+from collections import OrderedDict
+import itertools
 import __main__
 
 
@@ -20,6 +22,78 @@ def ap_satisfied_check(formula):
                 if pos_ap_num > 1:
                     return False
     return True
+
+
+class PathGraph:
+    def __init__(self):
+        self.graph = pgv.AGraph(directed=True, strict=False)
+        self.accepting_nodes = []
+        self.storage = {}
+
+    def build(self, graph):
+        self.accepting_nodes = graph.accepting_nodes
+        for node in graph.iternodes():
+            self.storage[node] = OrderedDict({'in': [], 'in_aps': [], 'out': [], 'out_aps': []})
+            for edge in graph.iterinedges(node):
+                src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')
+                self.storage[node]['in'].append((src, f))
+                if not f in self.storage[node]['in_aps']:
+                    self.storage[node]['in_aps'].append(f)
+            for edge in graph.iteroutedges(node):
+                src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')
+                self.storage[node]['out'].append((dst, f))
+                if not f in self.storage[node]['out_aps']:
+                    self.storage[node]['out_aps'].append(f)
+               
+        # build nodes
+        node_name_dict = {}
+        for node in self.storage:
+            node_name_dict[node] = []
+            in_aps = self.storage[node]['in_aps']
+            if 'init' in node:
+                self.node(name=node, label=node, accepting=True if node in self.accepting_nodes else False)
+                node_name_dict[node].append(node)
+            elif len(in_aps) == 1:
+                node_id = '{}|{}'.format(in_aps[0], node)
+                #self.node(name=node_id, label=node_id, accepting=True if node in self.accepting_nodes else False)
+                self.node(name=node_id, label=in_aps[0], accepting=True if node in self.accepting_nodes else False)
+                node_name_dict[node].append(node_id)
+            elif len(in_aps) > 1:
+                for in_ap in in_aps:
+                    node_id = '{}|{}'.format(in_ap, node)
+                    #self.node(name=node_id, label=node_id, accepting=True if node in self.accepting_nodes else False)
+                    self.node(name=node_id, label=in_ap, accepting=True if node in self.accepting_nodes else False)
+                    node_name_dict[node].append(node_id)
+
+        # build edges
+        for edge in graph.iteredges():
+            src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')
+            # find the source node
+            src_node_name = node_name_dict[src]
+            for src_node in src_node_name:
+                self.edge(src=src_node, dst='{}|{}'.format(f, dst), label=1 if f != '1' else 0)
+
+    def title(self, title):
+        self.graph.graph_attr['label'] = title
+
+    def node(self, name, label, accepting=False):
+        #self.graph.add_node(name, label=name, shape='doublecircle' if accepting else 'circle')
+        self.graph.add_node(name, label=label, shape='doublecircle' if accepting else 'circle')
+        if accepting:
+            self.accepting_nodes.append(name)
+    
+    def remove_node(self, *args):
+        self.graph.remove_node(*args)
+
+    def edge(self, src, dst, label):
+        self.graph.add_edge(src, dst, key=label, label=label, color='red')
+
+    def save(self, path):
+        self.graph.layout('dot')
+        self.graph.draw(path)
+
+    def __str__(self):
+        return str(self.graph)
 
 
 class Graph:
@@ -67,9 +141,6 @@ class Graph:
         self.graph.layout('dot')
         self.graph.draw(path)
 
-    def save_dot(self, path):
-        raise NotImplementedError
-
     def __str__(self):
         return str(self.graph)
     
@@ -81,6 +152,12 @@ class Graph:
     
     def iternodes(self):
         return self.graph.iternodes()
+
+    def iteredges(self, *args):
+        return self.graph.iteredges(*args)
+    
+    def iterinedges(self, *args):
+        return self.graph.iterinedges(*args)
     
     def iteroutedges(self, *args):
         return self.graph.iteroutedges(*args)
