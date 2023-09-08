@@ -3,7 +3,7 @@ from subprocess import Popen, PIPE
 import re
 import sys
 from collections import OrderedDict
-import itertools
+import spot
 import __main__
 
 
@@ -71,7 +71,7 @@ class PathGraph:
             # find the source node
             src_node_name = node_name_dict[src]
             for src_node in src_node_name:
-                self.edge(src=src_node, dst='{}|{}'.format(f, dst), label=1 if f != '1' else 0)
+                self.edge(src=src_node, dst='{}|{}'.format(f, dst), label='cost' if f != '1' else 0)
 
     def title(self, title):
         self.graph.graph_attr['label'] = title
@@ -112,7 +112,7 @@ class Graph:
 
     def edge(self, src, dst, label):
         if not '||' in label:
-            if src == dst:
+            if src == dst and label == '(1)':
                 return
             if not ap_satisfied_check(label):
                 return
@@ -125,9 +125,37 @@ class Graph:
                     self.graph.add_edge(src, dst, key=f, label=f, color='red')
 
     def simplify(self):
+
+        nodes_to_remove = []
         for node in self.graph.iternodes():
             if not 'init' in node and len(list(self.graph.iterinedges(node))) == 0:
-                self.graph.remove_node(node)
+                nodes_to_remove.append(node)
+        for node in nodes_to_remove:
+            self.remove_node(node)
+
+        edges_to_remove = []
+        for node in self.graph.iternodes():
+            # assumption: self transition edges are in CNF
+            for edge in self.iteroutedges(node):
+                src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')
+                if src == dst and '!' in f:
+                    print(src, dst, f)
+                    edges_to_remove.append((src, dst, f))
+        
+        # distribute the neg_f in self transition
+        for edge in edges_to_remove:
+            node, _, neg_f = edge
+            for out_edge in self.iteroutedges(node):
+                if out_edge[1] != node:  # not self transition
+                    raw_f = out_edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')
+                    f = spot.formula('{} & {}'.format(raw_f, neg_f))
+                    out_edge.attr['label'] = '(' + str(f).replace('&', '&&') + ')'
+                    #print(out_edge, '[raw]', raw_f, '[neg_f]', neg_f, '[after]', f)
+        
+        # remove neg_f self transition
+        for edge in edges_to_remove:
+            src, dst, _ = edge
+            self.remove_edge(src, dst)  # no need the handle the formula format
     
     def build_sub_graph(self, sub_graph_nodes):
         all_nodes = list(self.graph.iternodes())
