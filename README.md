@@ -73,7 +73,7 @@ We use a robot from Safety Gym called Point, with one actuator for turning and a
 <hr><br>
 </figure>
 
-* The left and right figures show the trajectory for the task $F((\neg y \wedge j) \wedge F(\neg y \wedge \neg w \wedge r))$.
+* The left and right figures show the trajectory for the task $F(j \wedge X(\neg y U r)) \wedge G(\neg w) $.
 <figure>
 <p align='center'>
     <img src='./zones/assets/avoid_more_1.gif'  height=300 width=300>
