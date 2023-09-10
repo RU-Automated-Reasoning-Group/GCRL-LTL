@@ -289,12 +289,13 @@ def path_finding(formula, debug=False):
     graph = gltl2ba(ltl_args)
     if debug:
         graph.save('graph.png')
+    exit()
 
-    from ltl import PathGraph
-    path_graph = PathGraph()
-    path_graph.build(graph)
-    path_graph.save('path_finding.png')
-    #exit()
+    # from ltl import PathGraph
+    # path_graph = PathGraph()
+    # path_graph.build(graph)
+    # path_graph.save('path_finding.png')
+    # #exit()
     
     scc_algo = SCCAlgorithm(graph=graph)
     scc = scc_algo.search()
@@ -332,15 +333,15 @@ def path_finding(formula, debug=False):
 if __name__ == '__main__':
 
     f1 = '(!p U d) && (!e U (q && (!n U a)))'
-    f2 = '<>b && a U b'  # **
+    f2 = '<>b && a U b'  # cannot be solved
     f3 = '!j U (w && (!y U r))'
     f4 = 'Fa'
-    f5 = 'GFa'  # *
-    f6 = 'GFa && GFb'  # *
+    f5 = 'GFa'
+    f6 = 'GFa && GFb'
     f7 = '[]<>a && []<>b'
     f8 = 'GF(r && XF y) && G(!w)'
     f9 = '[](<>(o && X (<> (c && X<> d))))'
-    f10 = '(! w) U ( r && ((! y) U j)) U (! y)' # ***
+    f10 = '(! w) U ( r && ((! y) U j)) U (! y)'
     f11 = '(! w) U ( r && ((! y) U j))'
     f12 = '<>((b || q) && <>((e || p) && <>m))'
     f13 = '<>((c || n) && <>(r && <>d)) && <>(q && <>((r || t) && <>m))'
@@ -349,13 +350,13 @@ if __name__ == '__main__':
     # NOTE: 
     # basic: f4, f5*
     # traverse: f6*, f7/f8, f9
-    # parallel: f12, f13 
+    # parallel: f12, f13
     # avoidance: f3, f11, f14
     # others: f1, f2**
     # * : does not handle '1' properly
     # ** : does not handle pos self-trans properly
     # *** : other problem
-    formula = f10
+    formula = f14
     print('[INPUT FORMULA]', formula)
     
     goals, avoid_zones = path_finding(formula, debug=True)

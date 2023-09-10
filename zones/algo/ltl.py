@@ -7,21 +7,56 @@ import spot
 import __main__
 
 
-# NOTE: assume no '||' operations
-def ap_satisfied_check(formula):
-    formula = formula.replace('(', '').replace(')', '').split(' ')
-    while '' in formula:
-        formula.remove('')
-    while '&&' in formula:
-        formula.remove('&&')
-    if len(formula) > 1:
-        pos_ap_num = 0
-        for e in formula:
-            if '!' not in e:
-                pos_ap_num += 1
-                if pos_ap_num > 1:
-                    return False
-    return True
+# NOTE: assumption: suppose all edges are in form of:
+# (D1 ap1) ^ (D2 ap2) ^ ... ^ (Dn apn), where D denotes
+# the pos/neg of an ap, and each ap presents only once.
+# This function should also work for (1).
+def edge_ap_check(f):
+    f = spot.simplify(f)
+    aps = spot.atomic_prop_collect(f)
+    pos_ap_num, neg_ap_num = 0, 0
+    aps_set = {'pos': [], 'neg': []}
+    for ap in aps:
+        if '!{}'.format(ap) not in str(f):  # NOTE: str(f) is required
+            pos_ap_num += 1
+            aps_set['pos'].append(str(ap))
+        else:
+            neg_ap_num += 1
+            aps_set['neg'].append(str(ap))
+    assert pos_ap_num + neg_ap_num == len(aps)
+
+    return pos_ap_num, neg_ap_num, aps_set
+
+
+def blue_edge_satisfiable_check(f):
+    pos_ap_num, neg_ap_num, aps_set = edge_ap_check(f)
+
+    return True if pos_ap_num <= 1 else False
+
+
+def red_edge_satisfiable_check(f, accepting):
+    pos_ap_num, neg_ap_num, aps_set = edge_ap_check(f)
+
+    if accepting:
+        return True if pos_ap_num <= 1 else False
+    else:
+        return True if pos_ap_num == 0 else False
+
+
+def blue_edge_simplify(formula):
+    f = spot.simplify(formula)
+    aps = spot.atomic_prop_collect(f)
+    if len(aps) == 0:
+        return '(1)'
+    elif len(aps) == 1:
+        return '({})'.format(f)
+    else:
+        pos_ap_num, neg_ap_num, aps_set = edge_ap_check(f)
+
+        if pos_ap_num == 0:
+            return '({})'.format(f)
+        elif pos_ap_num == 1:
+            return '({})'.format(aps_set['pos'][0])
 
 
 class PathGraph:
@@ -100,6 +135,7 @@ class Graph:
     def __init__(self):
         self.graph = pgv.AGraph(directed=True, strict=False)
         self.accepting_nodes = []
+        self.impossible_nodes = []
 
     def title(self, title):
         self.graph.graph_attr['label'] = title
@@ -112,17 +148,32 @@ class Graph:
 
     def edge(self, src, dst, label):
         if not '||' in label:
-            if src == dst and label == '(1)':
-                return
-            if not ap_satisfied_check(label):
-                return
-            else:
-                self.graph.add_edge(src, dst, key=label, label=label, color='red')
+            # red edge
+            if src == dst:
+                # accepting states can always bypass such check
+                accepting = src in self.accepting_nodes
+                if accepting and not red_edge_satisfiable_check(label, accepting=True):
+                    return
+                elif not accepting and not red_edge_satisfiable_check(label, accepting=False):
+                    # TODO: handle failure properly
+                    #assert False, 'red_edge_satisfiable_check failed on [{}]->({})-[{}]'.format(src, label, dst)
+                    self.impossible_nodes.append(src)
+                    return
+                elif label == '(1)':
+                    return
+                else:
+                    self.graph.add_edge(src, dst, key=label, label=label, color='red')
+            # blue edge
+            elif src != dst:
+                if not blue_edge_satisfiable_check(label):
+                    return
+                else:
+                    f = blue_edge_simplify(label)
+                    self.graph.add_edge(src, dst, key=f, label=f, color='blue')
         else:
             sub_formulas = label.split('||')
             for f in sub_formulas:
-                if ap_satisfied_check(f):
-                    self.graph.add_edge(src, dst, key=f, label=f, color='red')
+                self.edge(src, dst, label=f)
 
     def simplify(self):
 
@@ -134,28 +185,11 @@ class Graph:
             self.remove_node(node)
 
         edges_to_remove = []
-        for node in self.graph.iternodes():
-            # assumption: self transition edges are in CNF
+        for node in self.impossible_nodes:
             for edge in self.iteroutedges(node):
-                src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')
-                if src == dst and '!' in f:
-                    print(src, dst, f)
-                    edges_to_remove.append((src, dst, f))
-        
-        # distribute the neg_f in self transition
+                edges_to_remove.append(edge)
         for edge in edges_to_remove:
-            node, _, neg_f = edge
-            for out_edge in self.iteroutedges(node):
-                if out_edge[1] != node:  # not self transition
-                    raw_f = out_edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')
-                    f = spot.formula('{} & {}'.format(raw_f, neg_f))
-                    out_edge.attr['label'] = '(' + str(f).replace('&', '&&') + ')'
-                    #print(out_edge, '[raw]', raw_f, '[neg_f]', neg_f, '[after]', f)
-        
-        # remove neg_f self transition
-        for edge in edges_to_remove:
-            src, dst, _ = edge
-            self.remove_edge(src, dst)  # no need the handle the formula format
+            self.remove_edge(edge)
     
     def build_sub_graph(self, sub_graph_nodes):
         all_nodes = list(self.graph.iternodes())
@@ -290,7 +324,7 @@ def gltl2ba(args):
         match = prog.search(output)
         assert match, output
 
-        graph = Ltl2baParser.parse(match.group(1))
+        graph = Ltl2baParser.parse(match.group(1), ignore_title=False)
         graph.simplify()
 
     return graph
