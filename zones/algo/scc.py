@@ -33,11 +33,7 @@ def get_ltl_args(formula):
 
 
 def reformat_ltl(formula):
-    f = spot.formula(formula)
-    f = str(f).replace('&', '&&').replace('"', '').replace('|', '||').lower()
-    f = f.replace('u', 'U').replace('f', '<>').replace('g', '[]').replace('x', 'X')
-
-    return f
+    return formula.replace('F', '<>').replace('G', '[]')
 
 
 def ltl_to_zones(ltl, translation_function=None):
@@ -345,8 +341,9 @@ if __name__ == '__main__':
     f12 = '<>((b || q) && <>((e || p) && <>m))'
     f13 = '<>((c || n) && <>(r && <>d)) && <>(q && <>((r || t) && <>m))'
     f14 = '!y U (j && (!w U r))'
-    
-    formula = f12
+    f15 = 'F((a_1 || a_2) && F(b && F((c_1 || c_2) && F(d && F((e_1 || e_2) && F(z && F((k_1 || k_2) && F(h))))))))'
+
+    formula = f15
     print('[INPUT FORMULA]', formula)
     
     goals, avoid_zones = path_finding(formula, debug=True)

@@ -91,8 +91,8 @@ class PathGraph:
                 init_node = node
                 name = '{}_empty'.format(init_node)
                 node_name_dict[init_node] = [name]
-                self.node(name=name, label=name, accepting=True if node in self.accepting_nodes else False)
-                #self.node(name=name, label='{}', accepting=True if node in self.accepting_nodes else False)
+                #self.node(name=name, label=name, accepting=True if node in self.accepting_nodes else False)
+                self.node(name=name, label='{}', accepting=True if node in self.accepting_nodes else False)
         
         # other nodes
         for node in self.storage:
@@ -101,14 +101,13 @@ class PathGraph:
             if self.storage[node]['in']:
                 for in_node, in_f in self.storage[node]['in']:
                     name = '{}_{}'.format(node, in_f)
-                    self.node(name=name, label=name, accepting=True if node in self.accepting_nodes else False)
-                    #self.node(name=name, label=in_f, accepting=True if node in self.accepting_nodes else False)
+                    #self.node(name=name, label=name, accepting=True if node in self.accepting_nodes else False)
+                    self.node(name=name, label=in_f, accepting=True if node in self.accepting_nodes else False)
                     node_name_dict[node].append(name)
 
         # build edges
         for edge in graph.iteredges():
             src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')
-            print('[]', src, dst, f)
             if src != dst:
                 dst_name = '{}_{}'.format(dst, f)
                 src_node_names = node_name_dict[src]
@@ -116,7 +115,6 @@ class PathGraph:
                     assert self.has_node(src_name) and self.has_node(dst_name), 'src and dst nodes must be in the path finding graph'
                     label = self.storage[src]['self']
                     self.edge(src=src_name, dst=dst_name, label=label)
-                    print(edge, src_name, dst_name, label)
 
         # build title
         self.title(graph.graph.graph_attr['label'])
