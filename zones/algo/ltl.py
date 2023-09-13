@@ -3,21 +3,27 @@ from subprocess import Popen, PIPE
 import re
 import sys
 from collections import OrderedDict
-import spot
 import __main__
 
+
+def atomic_prop_collect(f):
+
+    aps = str(f).replace('!', '').replace(' ', '').replace('(', '').replace(')', '').replace('G', '').replace('F', '').replace('&&', ' ').split()
+    if '1' in aps:
+        aps.remove('1')
+    
+    return aps
 
 # NOTE: assumption: suppose all edges are in form of:
 # (D1 ap1) ^ (D2 ap2) ^ ... ^ (Dn apn), where D denotes
 # the pos/neg of an ap, and each ap presents only once.
 # This function should also work for (1).
 def edge_ap_check(f):
-    f = spot.simplify(f)
-    aps = spot.atomic_prop_collect(f)
+    aps = atomic_prop_collect(f)
     pos_ap_num, neg_ap_num = 0, 0
     aps_set = {'pos': [], 'neg': []}
     for ap in aps:
-        if '!{}'.format(ap) not in str(f):  # NOTE: str(f) is required
+        if '!{}'.format(ap) not in str(f):
             pos_ap_num += 1
             aps_set['pos'].append(str(ap))
         else:
@@ -43,9 +49,8 @@ def red_edge_satisfiable_check(f, accepting):
         return True if pos_ap_num == 0 else False
 
 
-def blue_edge_simplify(formula):
-    f = spot.simplify(formula)
-    aps = spot.atomic_prop_collect(f)
+def blue_edge_simplify(f):
+    aps = atomic_prop_collect(f)
     if len(aps) == 0:
         return '(1)'
     elif len(aps) == 1:

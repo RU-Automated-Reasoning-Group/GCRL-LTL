@@ -1,7 +1,6 @@
 from types import SimpleNamespace
 from collections import OrderedDict
 
-import spot
 
 #from algo.ltl import gltl2ba
 from ltl import gltl2ba
