@@ -66,10 +66,11 @@ class PathGraph:
         self.storage = {}
 
     def build(self, graph):
+        
         # parse graph
         self.accepting_nodes = graph.accepting_nodes
         for node in graph.iternodes():
-            self.storage[node] = OrderedDict({'in': [], 'out': [], 'self': None})
+            self.storage[node] = OrderedDict({'in': [], 'out': [], 'self': '{}'})
             for edge in graph.iterinedges(node):
                 src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')
                 if src != dst:  # this is required
@@ -80,111 +81,57 @@ class PathGraph:
                     self.storage[node]['out'].append((dst, f))
                 else:
                     self.storage[node]['self'] = f
+        
         # build nodes
         node_name_dict = {}
+        
+        # init (and staring) node
         for node in self.storage:
-            node_name_dict[node] = []
-            if self.storage[node]['in']:  # THIS is wrong, the init may also have its parent
-                for src, f in self.storage[node]['in']:
-                    cond = self.storage[src]['self']
-                    node_label = '{}|{}|{}'.format(node, f, cond)
-                    self.node(name=node_label, label=node_label, accepting=True if node in self.accepting_nodes else False)
-                    node_name_dict[node].append(node_label)
-            else:
-                # NOTE: should build a dummy start node
-                self.node(name='start', label='start', accepting=False)
-                f, cond = 'empty', 'empty'
-                node_label = '{}|{}|{}'.format(node, f, cond)
-                self.node(name=node_label, label=node_label, accepting=True if node in self.accepting_nodes else False)
-                node_name_dict[node].append(node_label)
-                self.edge(src='start', dst=node_label, label=None)
-        # build edges
-        for edge in graph.iteredges():
-            src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')
-            if src != dst:
-                # find the correct source and destination node name
-                src_node_names = node_name_dict[src]  # 'T0_S2' -> find all
-                dst_node_names = node_name_dict[dst]  # 'T0_S3' + 'a' -> find 'T0_S3|a|!p && !n'
-                for name in dst_node_names:
-                    if '{}|{}|'.format(dst, f) in name:
-                        dst_node = name
-                print(src, dst, f, src_node_names, dst_node)
-                for src_node in src_node_names:
-                    src_state = src_node.split('|')[1]
-                    dst_state = dst_node.split('|')[1]
-                    require = dst_node.split('|')[2]
-                    self.edge(src=src_node, dst=dst_node, label='cost({}->{}|require {})'.format(src_state, dst_state, require))
-
-                #print(f)
-                #print(src_node_names, dst_node_names)
-                #exit()
-                
-                # src_node_names = node_name_dict[src]
-                # for src_node in src_node_names:
-                #     print('[raw edge]', edge, '[src node]', src_node, '[dst]', dst, '[f]', f)
-                #     print(node_name_dict[dst])
-                #     dst_node = node_name_dict[dst]  # find the correct one
-                #     for name in node_name_dict[dst]:
-                #         pass
-                #     self.edge(src=src_node, dst=dst_node, label='cost({}->{})')
-                    #self.edge(src=src_node, dst='{}|{}|{}'.format(src_node, f, dst), label='cost' if f != '1' else 0)
-                #print(src_node_names)
-
-        self.save('debug.png')
-        exit()
-
-    def bbb_build(self, graph):
-        self.accepting_nodes = graph.accepting_nodes
-        for node in graph.iternodes():
-            self.storage[node] = OrderedDict({'in': [], 'in_aps': [], 'out': [], 'out_aps': []})
-            for edge in graph.iterinedges(node):
-                src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')
-                self.storage[node]['in'].append((src, f))
-                if not f in self.storage[node]['in_aps']:
-                    self.storage[node]['in_aps'].append(f)
-            for edge in graph.iteroutedges(node):
-                src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')
-                self.storage[node]['out'].append((dst, f))
-                if not f in self.storage[node]['out_aps']:
-                    self.storage[node]['out_aps'].append(f)
-               
-        # build nodes
-        node_name_dict = {}
-        for node in self.storage:
-            node_name_dict[node] = []
-            in_aps = self.storage[node]['in_aps']
             if 'init' in node:
-                self.node(name=node, label=node, accepting=True if node in self.accepting_nodes else False)
-                node_name_dict[node].append(node)
-            elif len(in_aps) == 1:
-                node_id = '{}|{}'.format(in_aps[0], node)
-                #self.node(name=node_id, label=node_id, accepting=True if node in self.accepting_nodes else False)
-                self.node(name=node_id, label=in_aps[0], accepting=True if node in self.accepting_nodes else False)
-                node_name_dict[node].append(node_id)
-            elif len(in_aps) > 1:
-                for in_ap in in_aps:
-                    node_id = '{}|{}'.format(in_ap, node)
-                    #self.node(name=node_id, label=node_id, accepting=True if node in self.accepting_nodes else False)
-                    self.node(name=node_id, label=in_ap, accepting=True if node in self.accepting_nodes else False)
-                    node_name_dict[node].append(node_id)
+                init_node = node
+                name = '{}_empty'.format(init_node)
+                node_name_dict[init_node] = [name]
+                self.node(name=name, label=name, accepting=True if node in self.accepting_nodes else False)
+                #self.node(name=name, label='{}', accepting=True if node in self.accepting_nodes else False)
+        
+        # other nodes
+        for node in self.storage:
+            if not node in node_name_dict.keys():
+                node_name_dict[node] = []
+            if self.storage[node]['in']:
+                for in_node, in_f in self.storage[node]['in']:
+                    name = '{}_{}'.format(node, in_f)
+                    self.node(name=name, label=name, accepting=True if node in self.accepting_nodes else False)
+                    #self.node(name=name, label=in_f, accepting=True if node in self.accepting_nodes else False)
+                    node_name_dict[node].append(name)
 
         # build edges
         for edge in graph.iteredges():
             src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')
-            # find the source node
-            src_node_name = node_name_dict[src]
-            for src_node in src_node_name:
-                self.edge(src=src_node, dst='{}|{}'.format(f, dst), label='cost' if f != '1' else 0)
+            print('[]', src, dst, f)
+            if src != dst:
+                dst_name = '{}_{}'.format(dst, f)
+                src_node_names = node_name_dict[src]
+                for src_name in src_node_names:
+                    assert self.has_node(src_name) and self.has_node(dst_name), 'src and dst nodes must be in the path finding graph'
+                    label = self.storage[src]['self']
+                    self.edge(src=src_name, dst=dst_name, label=label)
+                    print(edge, src_name, dst_name, label)
+
+        # build title
+        self.title(graph.graph.graph_attr['label'])
 
     def title(self, title):
         self.graph.graph_attr['label'] = title
 
     def node(self, name, label, accepting=False):
-        #self.graph.add_node(name, label=name, shape='doublecircle' if accepting else 'circle')
         self.graph.add_node(name, label=label, shape='doublecircle' if accepting else 'circle')
         if accepting:
             self.accepting_nodes.append(name)
     
+    def has_node(self, *args):
+        return self.graph.has_node(*args)
+
     def remove_node(self, *args):
         self.graph.remove_node(*args)
 
@@ -218,12 +165,11 @@ class Graph:
         if not '||' in label:
             # red edge
             if src == dst:
-                # accepting states can always bypass such check
                 accepting = src in self.accepting_nodes
                 if accepting and not red_edge_satisfiable_check(label, accepting=True):
                     return
                 elif not accepting and not red_edge_satisfiable_check(label, accepting=False):
-                    # TODO: handle failure properly
+                    # NOTE: handle failure properly
                     #assert False, 'red_edge_satisfiable_check failed on [{}]->({})-[{}]'.format(src, label, dst)
                     self.impossible_nodes.append(src)
                     return

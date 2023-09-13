@@ -346,7 +346,7 @@ if __name__ == '__main__':
     f13 = '<>((c || n) && <>(r && <>d)) && <>(q && <>((r || t) && <>m))'
     f14 = '!y U (j && (!w U r))'
     
-    formula = f6
+    formula = f12
     print('[INPUT FORMULA]', formula)
     
     goals, avoid_zones = path_finding(formula, debug=True)
