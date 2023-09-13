@@ -51,11 +51,12 @@ def red_edge_satisfiable_check(f, accepting):
 
 
 def blue_edge_simplify(f):
+    f = f.replace(' ', '').replace('&&', ' && ')
     aps = atomic_prop_collect(f)
     if len(aps) == 0:
         return '(1)'
     elif len(aps) == 1:
-        return '({})'.format(f)
+        return '{}'.format(f)
     else:
         pos_ap_num, neg_ap_num, aps_set = edge_ap_check(f)
 
@@ -96,7 +97,7 @@ class PathGraph:
         for node in self.storage:
             if 'init' in node:
                 init_node = node
-                name = '{}_empty'.format(init_node)
+                name = '{}|empty'.format(init_node)
                 node_name_dict[init_node] = [name]
                 self.node(name=name, label='{}' if self.simple_labels else name, accepting=True if node in self.accepting_nodes else False)
         
@@ -155,6 +156,9 @@ class PathGraph:
 
     def edge(self, src, dst, label):
         self.graph.add_edge(src, dst, key=label, label=label, color='red')
+
+    def get_edge(self, *args):
+        return self.graph.get_edge(*args)
 
     def save(self, path):
         self.graph.layout('dot')

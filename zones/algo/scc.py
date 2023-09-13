@@ -35,34 +35,6 @@ def reformat_ltl(formula):
     return formula.replace('F', '<>').replace('G', '[]')
 
 
-def ltl_to_zones(ltl, translation_function=None):
-
-    if translation_function is None:
-        def translate(word):
-            return word.capitalize()
-    else:
-        translate = translation_function
-
-    GOALS, AVOID_ZONES = [], []
-    for f in ltl:
-        avoid_zones = []
-        f = f.replace('(', '').replace(')', '').split('&&')
-        f = [_f.strip() for _f in f]
-        for _f in f:
-            if '!' not in _f:
-                GOALS.append(translate(_f))
-            else:
-                avoid_zones.append(translate(_f.replace('!', '')))
-        AVOID_ZONES.append(avoid_zones)
-
-    while '1' in GOALS:
-        all_index = GOALS.index('1')
-        GOALS.pop(all_index)
-        AVOID_ZONES.pop(all_index)
-
-    return GOALS, AVOID_ZONES
-
-
 class SCCAlgorithm:
     def __init__(self, graph):
         self.storage = OrderedDict()
@@ -157,7 +129,11 @@ class PathFindingAlgorithm:
                 row[self.node_to_index(node)] = INF
             for edge in self.graph.iteroutedges(node):
                 src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ')
+                # TODO: estimate the cost
                 row[self.node_to_index(dst)] = 0 if f == '(1)' else 1
+
+    def update_matrix(self):
+        raise NotImplementedError
 
     def node_to_index(self, node):
         return self.nodes.index(node)
@@ -241,7 +217,7 @@ class PathFindingAlgorithm:
             node = self.index_to_node(vertex_index)
             if node in accepting_nodes:
                 path = self.get_path(vertex_index, self.parents, path=[])
-                acc_paths[node] = {'path': path, 'cost': self.distances[vertex_index], 'ltl': self.build_ltl(path)}
+                acc_paths[node] = {'path': path, 'cost': self.distances[vertex_index], 'plan': self.build_plan(path)}
         
         return acc_paths
     
@@ -254,31 +230,42 @@ class PathFindingAlgorithm:
             node_index = self.node_to_index(node)
             self.dijkstra(start_vertex=node_index)
             path = self.get_path(node_index, self.parents, path=[])
-            loop_paths[node] = {'path': path, 'cost': self.distances[node_index], 'ltl': self.build_ltl(path)}
+            loop_paths[node] = {'path': path, 'cost': self.distances[node_index], 'plan': self.build_plan(path)}
         
         return loop_paths
 
-    def build_ltl(self, path):
+    def build_plan(self, path):
 
         if self.path_type == 'direct':
             path = [self.index_to_node(self.start_vertex)] + path
-            exit()
-
-        #if self.path_type == 'direct':
-        #    path = [self.index_to_node(self.start_vertex)] + path
-        #elif self.path_type == 'loop':
-        #    path = [path[-1]] + path
         
-        ltl = []
-        for p_idx, node in enumerate(path):
-                if p_idx == len(path) - 1:
-                    break
-                idx = self.storage[node]['next'].index(path[p_idx + 1])
-                f = self.storage[node]['edges'][idx]
-                if f != '(1)':
-                    ltl.append(f)
+        elif self.path_type == 'loop':
+            path = [path[-1]] + path
 
-        return ltl
+        GOALS = []
+        AVOIDS = []
+
+        for p_idx, node in enumerate(path):                
+            
+            if p_idx == 0:
+                continue
+
+            # TODO: more robust implementation
+            state = node.split('|')[-1].capitalize()
+            prev_node = path[p_idx - 1]
+            edge = self.graph.get_edge(prev_node, node)
+            f = edge.get_name()
+            if '{}' in f:
+                avoid = []
+            else:
+                avoid = edge.get_name().replace('&&', '').replace('!', '').split()
+                avoid = [ap.capitalize() for ap in avoid]
+            
+            if state not in ('empty', '1') and '!' not in state:
+                GOALS.append(state)
+                AVOIDS.append(avoid)
+
+        return GOALS, AVOIDS
 
 
 def path_finding(formula, debug=False):
@@ -303,10 +290,9 @@ def path_finding(formula, debug=False):
     if debug:
         print('[acc_paths]', acc_paths)
 
-    exit()
-
     if len(scc) <= 1:
-        ltl = acc_paths[accepting_nodes[0]]['ltl']
+        GOALS = acc_paths[accepting_nodes[0]]['plan'][0]
+        AVOIDS = acc_paths[accepting_nodes[0]]['plan'][1]
     else:
         scc_graph = path_graph.build_sub_graph(sub_graph_nodes=scc)
         loop_algo = PathFindingAlgorithm(graph=scc_graph, path_type='loop')
@@ -324,9 +310,10 @@ def path_finding(formula, debug=False):
             if cost < min_cost:
                 min_cost_acc_node = node
         
-        ltl = acc_paths[min_cost_acc_node]['ltl'] + loop_paths[min_cost_acc_node]['ltl'] * FOREVER
+        GOALS = acc_paths[min_cost_acc_node]['plan'][0] + loop_paths[min_cost_acc_node]['plan'][0] * FOREVER
+        AVOIDS = acc_paths[min_cost_acc_node]['plan'][1] + loop_paths[min_cost_acc_node]['plan'][1] * FOREVER
 
-    return ltl_to_zones(ltl)
+    return GOALS, AVOIDS
 
 
 if __name__ == '__main__':
@@ -347,7 +334,7 @@ if __name__ == '__main__':
     f14 = '!y U (j && (!w U r))'
     f15 = 'F((a_1 || a_2) && F(b && F((c_1 || c_2) && F(d && F((e_1 || e_2) && F(z && F((k_1 || k_2) && F(h))))))))'
 
-    formula = f9
+    formula = f15
     print('[INPUT FORMULA]', formula)
     
     goals, avoid_zones = path_finding(formula, debug=True)
