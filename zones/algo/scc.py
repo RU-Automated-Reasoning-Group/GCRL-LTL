@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 
 #from algo.ltl import gltl2ba
-from ltl import gltl2ba
+from ltl import gltl2ba, PathGraph
 
 INF = 999
 NO_PARENT = -1
@@ -262,8 +262,12 @@ class PathFindingAlgorithm:
 
         if self.path_type == 'direct':
             path = [self.index_to_node(self.start_vertex)] + path
-        elif self.path_type == 'loop':
-            path = [path[-1]] + path
+            exit()
+
+        #if self.path_type == 'direct':
+        #    path = [self.index_to_node(self.start_vertex)] + path
+        #elif self.path_type == 'loop':
+        #    path = [path[-1]] + path
         
         ltl = []
         for p_idx, node in enumerate(path):
@@ -281,33 +285,34 @@ def path_finding(formula, debug=False):
 
     formula = reformat_ltl(formula)
     ltl_args = get_ltl_args(formula=formula)
-    graph = gltl2ba(ltl_args)
+    buchi_graph = gltl2ba(ltl_args)
     if debug:
-        graph.save('graph.png')
+        buchi_graph.save('buchi.png')
 
-    from ltl import PathGraph
-    path_graph = PathGraph()
-    path_graph.build(graph)
-    path_graph.save('path_finding.png')
-    exit()
+    path_graph = PathGraph(simple_labels=False)
+    path_graph.build(buchi_graph)
+    if debug:
+        path_graph.save('path_finding.png')
     
-    scc_algo = SCCAlgorithm(graph=graph)
+    scc_algo = SCCAlgorithm(graph=path_graph)
     scc = scc_algo.search()
     accepting_nodes=[node for node in scc if 'accept' in node]
     
-    path_algo = PathFindingAlgorithm(graph=graph, path_type='direct')
+    path_algo = PathFindingAlgorithm(graph=path_graph, path_type='direct')
     acc_paths = path_algo.get_accepting_path(accepting_nodes=accepting_nodes)
     if debug:
         print('[acc_paths]', acc_paths)
 
+    exit()
+
     if len(scc) <= 1:
         ltl = acc_paths[accepting_nodes[0]]['ltl']
     else:
-        scc_graph = graph.build_sub_graph(sub_graph_nodes=scc)
+        scc_graph = path_graph.build_sub_graph(sub_graph_nodes=scc)
         loop_algo = PathFindingAlgorithm(graph=scc_graph, path_type='loop')
         loop_paths = loop_algo.get_loop_path(accepting_nodes=accepting_nodes)
         if debug:
-            scc_graph.save('scc_graph.png')
+            scc_graph.save('scc_path_finding.png')
             print('[loop_paths]', loop_paths)
         
         min_cost_acc_node = None
@@ -342,7 +347,7 @@ if __name__ == '__main__':
     f14 = '!y U (j && (!w U r))'
     f15 = 'F((a_1 || a_2) && F(b && F((c_1 || c_2) && F(d && F((e_1 || e_2) && F(z && F((k_1 || k_2) && F(h))))))))'
 
-    formula = f15
+    formula = f9
     print('[INPUT FORMULA]', formula)
     
     goals, avoid_zones = path_finding(formula, debug=True)

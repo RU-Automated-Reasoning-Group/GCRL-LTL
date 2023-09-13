@@ -6,6 +6,7 @@ from collections import OrderedDict
 import __main__
 
 
+# NOTE: see spot.atomic_prop_collect() for robust implementation
 def atomic_prop_collect(f):
 
     aps = str(f).replace('!', '').replace(' ', '').replace('(', '').replace(')', '').replace('G', '').replace('F', '').replace('&&', ' ').split()
@@ -65,10 +66,11 @@ def blue_edge_simplify(f):
 
 
 class PathGraph:
-    def __init__(self):
+    def __init__(self, simple_labels=True):
         self.graph = pgv.AGraph(directed=True, strict=False)
         self.accepting_nodes = []
         self.storage = {}
+        self.simple_labels = simple_labels
 
     def build(self, graph):
         
@@ -96,8 +98,7 @@ class PathGraph:
                 init_node = node
                 name = '{}_empty'.format(init_node)
                 node_name_dict[init_node] = [name]
-                #self.node(name=name, label=name, accepting=True if node in self.accepting_nodes else False)
-                self.node(name=name, label='{}', accepting=True if node in self.accepting_nodes else False)
+                self.node(name=name, label='{}' if self.simple_labels else name, accepting=True if node in self.accepting_nodes else False)
         
         # other nodes
         for node in self.storage:
@@ -105,16 +106,15 @@ class PathGraph:
                 node_name_dict[node] = []
             if self.storage[node]['in']:
                 for in_node, in_f in self.storage[node]['in']:
-                    name = '{}_{}'.format(node, in_f)
-                    #self.node(name=name, label=name, accepting=True if node in self.accepting_nodes else False)
-                    self.node(name=name, label=in_f, accepting=True if node in self.accepting_nodes else False)
+                    name = '{}|{}'.format(node, in_f)
+                    self.node(name=name, label=in_f if self.simple_labels else name, accepting=True if node in self.accepting_nodes else False)
                     node_name_dict[node].append(name)
 
         # build edges
         for edge in graph.iteredges():
             src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')
             if src != dst:
-                dst_name = '{}_{}'.format(dst, f)
+                dst_name = '{}|{}'.format(dst, f)
                 src_node_names = node_name_dict[src]
                 for src_name in src_node_names:
                     assert self.has_node(src_name) and self.has_node(dst_name), 'src and dst nodes must be in the path finding graph'
@@ -131,6 +131,21 @@ class PathGraph:
         self.graph.add_node(name, label=label, shape='doublecircle' if accepting else 'circle')
         if accepting:
             self.accepting_nodes.append(name)
+
+    def edges(self):
+        return self.graph.edges()
+    
+    def iternodes(self):
+        return self.graph.iternodes()
+
+    def iteredges(self, *args):
+        return self.graph.iteredges(*args)
+    
+    def iterinedges(self, *args):
+        return self.graph.iterinedges(*args)
+    
+    def iteroutedges(self, *args):
+        return self.graph.iteroutedges(*args)
     
     def has_node(self, *args):
         return self.graph.has_node(*args)
@@ -145,11 +160,19 @@ class PathGraph:
         self.graph.layout('dot')
         self.graph.draw(path)
 
+    def build_sub_graph(self, sub_graph_nodes):
+        all_nodes = list(self.graph.iternodes())
+        remove_nodes = [node for node in all_nodes if not node in sub_graph_nodes]
+        for node in remove_nodes:
+            self.remove_node(node)
+        
+        return self
+
     def __str__(self):
         return str(self.graph)
 
 
-class Graph:
+class BuchiGraph:
     def __init__(self):
         self.graph = pgv.AGraph(directed=True, strict=False)
         self.accepting_nodes = []
@@ -207,14 +230,6 @@ class Graph:
         for node in nodes_to_remove:
             self.remove_node(node)
 
-    def build_sub_graph(self, sub_graph_nodes):
-        all_nodes = list(self.graph.iternodes())
-        remove_nodes = [node for node in all_nodes if not node in sub_graph_nodes]
-        for node in remove_nodes:
-            self.remove_node(node)
-        
-        return self
-
     def save(self, path):
         self.graph.layout('dot')
         self.graph.draw(path)
@@ -261,7 +276,7 @@ class Ltl2baParser:
 
     @staticmethod
     def parse(ltl2ba_output, ignore_title=True):
-        graph = Graph()
+        graph = BuchiGraph()
         src_node = None
         for line in ltl2ba_output.split('\n'):
             if Ltl2baParser.is_title(line):
