@@ -111,6 +111,10 @@ class PathGraph:
                     self.node(name=name, label=in_f if self.simple_labels else name, accepting=True if node in self.accepting_nodes else False)
                     node_name_dict[node].append(name)
 
+        # TODO: distribute the (1)
+        print(graph.nodes())
+        print(self.graph.nodes())
+
         # build edges
         for edge in graph.iteredges():
             src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')

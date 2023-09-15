@@ -246,7 +246,7 @@ class PathFindingAlgorithm:
         GOALS = []
         AVOIDS = []
 
-        for p_idx, node in enumerate(path):                
+        for p_idx, node in enumerate(path):
             
             if p_idx == 0:
                 continue
@@ -309,6 +309,7 @@ def path_finding(formula, debug=False):
             p_cost, q_cost = acc_paths[node]['cost'], loop_paths[node]['cost']
             cost = p_cost + OMEGA * q_cost
             if cost < min_cost:
+                min_cost = cost
                 min_cost_acc_node = node
         
         GOALS = acc_paths[min_cost_acc_node]['plan'][0] + loop_paths[min_cost_acc_node]['plan'][0] * FOREVER
@@ -326,7 +327,7 @@ if __name__ == '__main__':
     f5 = 'GFa'
     f6 = 'GFa && GFb'
     f7 = '[]<>a && []<>b'
-    f8 = 'GF(r && XF y) && G(!w)'
+    f8 = 'GF(r && XF y)'# && G(!w)'
     f9 = '[](<>(o && X (<> (c && X<> d))))'
     f10 = '(! w) U ( r && ((! y) U j)) U (! y)'
     f11 = '(! w) U ( r && ((! y) U j))'
@@ -335,8 +336,10 @@ if __name__ == '__main__':
     f14 = '!y U (j && (!w U r))'
     f15 = 'F((a_1 || a_2) && F(b && F((c_1 || c_2) && F(d && F((e_1 || e_2) && F(z && F((k_1 || k_2) && F(h))))))))'
     f16 = 'GF(a_1 && XF(a_2 && XF(a_3 && XF(a_4))))'
+    f17 = 'GF(room_1_0 && XF(room_3_0 && XF(room_3_2 && XF(room_1_2))))'
+    f18 = 'Froom_0_2 && XGF(room_2_2 && XF(room_3_2 && XF(room_3_3 && XF(room_2_3))))'
 
-    formula = f16
+    formula = f8
     print('[INPUT FORMULA]', formula)
     
     goals, avoid_zones = path_finding(formula, debug=True)
