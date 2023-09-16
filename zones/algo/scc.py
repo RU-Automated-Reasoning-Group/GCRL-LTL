@@ -327,7 +327,7 @@ if __name__ == '__main__':
     f5 = 'GFa'
     f6 = 'GFa && GFb'
     f7 = '[]<>a && []<>b'
-    f8 = 'GF(r && XF y)'# && G(!w)'
+    f8 = 'GF(r && XF y) && G(!w)'
     f9 = '[](<>(o && X (<> (c && X<> d))))'
     f10 = '(! w) U ( r && ((! y) U j)) U (! y)'
     f11 = '(! w) U ( r && ((! y) U j))'

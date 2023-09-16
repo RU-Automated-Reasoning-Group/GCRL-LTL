@@ -93,7 +93,7 @@ class PathGraph:
         # build nodes
         node_name_dict = {}
         
-        # init (and staring) node
+        # init node
         for node in self.storage:
             if 'init' in node:
                 init_node = node
@@ -109,11 +109,8 @@ class PathGraph:
                 for in_node, in_f in self.storage[node]['in']:
                     name = '{}|{}'.format(node, in_f)
                     self.node(name=name, label=in_f if self.simple_labels else name, accepting=True if node in self.accepting_nodes else False)
-                    node_name_dict[node].append(name)
-
-        # TODO: distribute the (1)
-        print(graph.nodes())
-        print(self.graph.nodes())
+                    if name not in node_name_dict[node]:
+                        node_name_dict[node].append(name)
 
         # build edges
         for edge in graph.iteredges():
