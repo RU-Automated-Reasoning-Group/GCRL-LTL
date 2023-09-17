@@ -76,21 +76,6 @@ class SCCAlgorithm:
                 if x == v:
                     self.SCCS.append([scc, accepting])
                     break
-
-    def get_SCC(self, v, goal_scc=None):
-        for scc in self.SCCS:
-            if scc[1]:
-                goal_scc = scc[0]
-        stack = [(v, [v])]
-        visited = set()
-        while stack:
-            (vertex, path) = stack.pop()
-            if vertex not in visited:
-                if vertex in goal_scc:
-                    return goal_scc
-                visited.add(vertex)
-                for neighbor in self.storage[vertex]['next']:
-                    stack.append((neighbor, path + [neighbor]))
         
     def search(self, v=None):
         if v is None:
