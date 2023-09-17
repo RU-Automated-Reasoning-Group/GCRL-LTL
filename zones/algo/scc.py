@@ -98,9 +98,9 @@ class SCCAlgorithm:
                 if 'init' in name:
                     v = name
         self.SCC_search(v)
-        scc = self.get_SCC(v)
+        sccs = [scc[0] for scc in self.SCCS if scc[1]]
         
-        return scc
+        return sccs
 
 
 class PathFindingAlgorithm:
@@ -277,43 +277,54 @@ def path_finding(formula, debug=False):
     if debug:
         buchi_graph.save('buchi.png')
 
-    path_graph = PathGraph(simple_labels=False)
+    path_graph = PathGraph()
     path_graph.build(buchi_graph)
     if debug:
         path_graph.save('path_finding.png')
     
     scc_algo = SCCAlgorithm(graph=path_graph)
-    scc = scc_algo.search()
-    accepting_nodes=[node for node in scc if 'accept' in node]
-    
-    path_algo = PathFindingAlgorithm(graph=path_graph, path_type='direct')
-    acc_paths = path_algo.get_accepting_path(accepting_nodes=accepting_nodes)
-    if debug:
-        print('[acc_paths]', acc_paths)
+    sccs = scc_algo.search()
 
-    if len(scc) <= 1:
-        GOALS = acc_paths[accepting_nodes[0]]['plan'][0]
-        AVOIDS = acc_paths[accepting_nodes[0]]['plan'][1]
-    else:
-        scc_graph = path_graph.build_sub_graph(sub_graph_nodes=scc)
-        loop_algo = PathFindingAlgorithm(graph=scc_graph, path_type='loop')
-        loop_paths = loop_algo.get_loop_path(accepting_nodes=accepting_nodes)
+    plans = []
+    for scc in sccs:
         if debug:
-            scc_graph.save('scc_path_finding.png')
-            print('[loop_paths]', loop_paths)
+            print('-' * 80)
+            print('[searching scc]', scc)
+        accepting_nodes=[node for node in scc if 'accept' in node]
         
-        min_cost_acc_node = None
-        min_cost = INF
+        path_algo = PathFindingAlgorithm(graph=path_graph, path_type='direct')
+        acc_paths = path_algo.get_accepting_path(accepting_nodes=accepting_nodes)
+        if debug:
+            print('[acc_paths]', acc_paths)
 
-        for node in accepting_nodes:
-            p_cost, q_cost = acc_paths[node]['cost'], loop_paths[node]['cost']
-            cost = p_cost + OMEGA * q_cost
-            if cost < min_cost:
-                min_cost = cost
-                min_cost_acc_node = node
-        
-        GOALS = acc_paths[min_cost_acc_node]['plan'][0] + loop_paths[min_cost_acc_node]['plan'][0] * FOREVER
-        AVOIDS = acc_paths[min_cost_acc_node]['plan'][1] + loop_paths[min_cost_acc_node]['plan'][1] * FOREVER
+        if len(scc) <= 1:
+            GOALS = acc_paths[accepting_nodes[0]]['plan'][0]
+            AVOIDS = acc_paths[accepting_nodes[0]]['plan'][1]
+            cost = acc_paths[accepting_nodes[0]]['cost']
+        else:
+            scc_graph = path_graph.build_sub_graph(sub_graph_nodes=scc)
+            loop_algo = PathFindingAlgorithm(graph=scc_graph, path_type='loop')
+            loop_paths = loop_algo.get_loop_path(accepting_nodes=accepting_nodes)
+            if debug:
+                scc_graph.save('scc_path_finding.png')
+                print('[loop_paths]', loop_paths)
+            
+            min_cost_acc_node = None
+            min_cost = INF
+
+            for node in accepting_nodes:
+                p_cost, q_cost = acc_paths[node]['cost'], loop_paths[node]['cost']
+                cost = p_cost + OMEGA * q_cost
+                if cost < min_cost:
+                    min_cost = cost
+                    min_cost_acc_node = node
+            
+            GOALS = acc_paths[min_cost_acc_node]['plan'][0] + loop_paths[min_cost_acc_node]['plan'][0] * FOREVER
+            AVOIDS = acc_paths[min_cost_acc_node]['plan'][1] + loop_paths[min_cost_acc_node]['plan'][1] * FOREVER
+        plans.append((cost, GOALS, AVOIDS))
+    
+    plans.sort()
+    GOALS, AVOIDS = plans[0][1], plans[0][2]
 
     return GOALS, AVOIDS
 
@@ -339,9 +350,10 @@ if __name__ == '__main__':
     f17 = 'GF(room_1_0 && XF(room_3_0 && XF(room_3_2 && XF(room_1_2))))'
     f18 = 'Froom_0_2 && XGF(room_2_2 && XF(room_3_2 && XF(room_3_3 && XF(room_2_3))))'
 
-    formula = f8
+    formula = f1
     print('[INPUT FORMULA]', formula)
     
     goals, avoid_zones = path_finding(formula, debug=True)
+    print('-' * 80)
     print('[GOALS]', goals)
     print('[AVOID]', avoid_zones)

@@ -2,6 +2,7 @@ import pygraphviz as pgv
 from subprocess import Popen, PIPE
 import re
 import sys
+import itertools
 from collections import OrderedDict
 import __main__
 
@@ -59,19 +60,19 @@ def blue_edge_simplify(f):
         return '{}'.format(f)
     else:
         pos_ap_num, neg_ap_num, aps_set = edge_ap_check(f)
-
-        if pos_ap_num == 0:
+        if neg_ap_num > 1 and pos_ap_num == 0:
+            return f
+        elif pos_ap_num == 0:
             return '({})'.format(f)
         elif pos_ap_num == 1:
             return '({})'.format(aps_set['pos'][0])
 
 
 class PathGraph:
-    def __init__(self, simple_labels=True):
+    def __init__(self):
         self.graph = pgv.AGraph(directed=True, strict=False)
         self.accepting_nodes = []
         self.storage = {}
-        self.simple_labels = simple_labels
 
     def build(self, graph):
         
@@ -99,7 +100,7 @@ class PathGraph:
                 init_node = node
                 name = '{}|empty'.format(init_node)
                 node_name_dict[init_node] = [name]
-                self.node(name=name, label='{}' if self.simple_labels else name, accepting=True if node in self.accepting_nodes else False)
+                self.node(name=name, label=name, accepting=True if node in self.accepting_nodes else False)
         
         # other nodes
         for node in self.storage:
@@ -108,7 +109,7 @@ class PathGraph:
             if self.storage[node]['in']:
                 for in_node, in_f in self.storage[node]['in']:
                     name = '{}|{}'.format(node, in_f)
-                    self.node(name=name, label=in_f if self.simple_labels else name, accepting=True if node in self.accepting_nodes else False)
+                    self.node(name=name, label=name, accepting=True if node in self.accepting_nodes else False)
                     if name not in node_name_dict[node]:
                         node_name_dict[node].append(name)
 
@@ -123,6 +124,27 @@ class PathGraph:
                     label = self.storage[src]['self']
                     self.edge(src=src_name, dst=dst_name, label=label)
 
+        # simplify
+        nodes_to_remove = []
+        for node in self.iternodes():
+            if node.split('|')[1] == '1' or '!' in node:
+
+                in_edges = list(self.iterinedges(node))
+                out_edges = list(self.iteroutedges(node))
+
+                for in_edge, out_edge in itertools.product(in_edges, out_edges):
+                    if in_edge[0] in self.accepting_nodes and out_edge[1] in self.accepting_nodes:
+                        acc_circle_f = in_edge.attr['label']
+                        new_name = node.split('|')[0] + '|' + acc_circle_f
+                        node.attr.update(string=new_name, name=new_name, label=new_name)
+                    else:
+                        self.edge(src=in_edge[0], dst=out_edge[1], label=out_edge.attr['label'])
+                        if node not in nodes_to_remove:
+                            nodes_to_remove.append(node)
+
+        for node in nodes_to_remove:
+            self.remove_node(node)
+
         # build title
         self.title(graph.graph.graph_attr['label'])
 
@@ -130,7 +152,7 @@ class PathGraph:
         self.graph.graph_attr['label'] = title
 
     def node(self, name, label, accepting=False):
-        self.graph.add_node(name, label=label, shape='doublecircle' if accepting else 'circle')
+        self.graph.add_node(name, name=name, label=label, shape='doublecircle' if accepting else 'circle')
         if accepting:
             self.accepting_nodes.append(name)
 
@@ -187,8 +209,7 @@ class BuchiGraph:
         self.graph.graph_attr['label'] = title
 
     def node(self, name, label, accepting=False):
-        self.graph.add_node(name, label=name, shape='doublecircle' if accepting else 'circle')
-        #self.graph.add_node(name, label=label, shape='doublecircle' if accepting else 'circle')
+        self.graph.add_node(name, name=name, label=name, shape='doublecircle' if accepting else 'circle')
         if accepting:
             self.accepting_nodes.append(name)
 
@@ -221,6 +242,7 @@ class BuchiGraph:
                 self.edge(src, dst, label=f)
 
     def simplify(self):
+
         edges_to_remove = []
         for node in self.impossible_nodes:
             for edge in self.iteroutedges(node):
@@ -229,11 +251,36 @@ class BuchiGraph:
             self.remove_edge(edge)
 
         nodes_to_remove = []
-        for node in self.graph.iternodes():
-            if not 'init' in node and len(list(self.graph.iterinedges(node))) == 0:
-                nodes_to_remove.append(node)
+        for node in self.iternodes():
+            if not 'init' in node:
+                in_edges = list(self.iterinedges(node))
+                if len(in_edges) == 0:
+                    nodes_to_remove.append(node)
+                elif len(in_edges) == 1:
+                    src, dst = in_edges[0]
+                    if src == dst:
+                        nodes_to_remove.append(node)
         for node in nodes_to_remove:
             self.remove_node(node)
+
+        direct_trans = {}
+        for node in self.iternodes():
+            direct_trans[node] = []
+            for edge in self.iteroutedges(node):
+                src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')
+                if src != dst and (f == '1' or '!' in f):
+                    direct_trans[str(node)].append(f)
+        
+        edges_to_remove = []
+        for node in direct_trans:
+            if direct_trans[node]:
+                for edge in self.iteroutedges(node):
+                    src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ').replace('(', '').replace(')', '')
+                    if src != dst and f not in direct_trans[node]:
+                        edges_to_remove.append(edge)
+
+        for edge in edges_to_remove:
+           self.remove_edge(edge)
 
     def save(self, path):
         self.graph.layout('dot')
