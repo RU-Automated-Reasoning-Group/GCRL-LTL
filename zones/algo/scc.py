@@ -334,8 +334,9 @@ if __name__ == '__main__':
     f16 = 'GF(a_1 && XF(a_2 && XF(a_3 && XF(a_4))))'
     f17 = 'GF(room_1_0 && XF(room_3_0 && XF(room_3_2 && XF(room_1_2))))'
     f18 = 'Froom_0_2 && XGF(room_2_2 && XF(room_3_2 && XF(room_3_3 && XF(room_2_3))))'
+    f19 = 'GF( room_1_0 && XF( room_3_0 && XF(room_3_2 && XF(room_1_2)))) || (F room_0_2 && XGF( room_2_2 && XF( room_3_2 && XF( room_3_3 && XF( room_2_3)))))'
 
-    formula = f1
+    formula = f19
     print('[INPUT FORMULA]', formula)
     
     goals, avoid_zones = path_finding(formula, debug=True)

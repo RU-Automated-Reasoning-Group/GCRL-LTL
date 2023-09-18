@@ -75,6 +75,8 @@ class PathGraph:
         self.storage = {}
 
     def build(self, graph):
+
+        self.build_graph = graph
         
         # parse graph
         self.accepting_nodes = graph.accepting_nodes
@@ -188,13 +190,15 @@ class PathGraph:
         self.graph.draw(path)
 
     def build_sub_graph(self, sub_graph_nodes):
-        all_nodes = list(self.graph.iternodes())
+        sub_graph = PathGraph()
+        sub_graph.build(self.build_graph)
+        all_nodes = list(sub_graph.iternodes())
         remove_nodes = [node for node in all_nodes if not node in sub_graph_nodes]
         for node in remove_nodes:
-            self.remove_node(node)
+            sub_graph.remove_node(node)
         
-        return self
-
+        return sub_graph
+    
     def __str__(self):
         return str(self.graph)
 
