@@ -1,13 +1,12 @@
 from types import SimpleNamespace
 from collections import OrderedDict
 
+from algo.ltl import gltl2ba, PathGraph
 
-#from algo.ltl import gltl2ba
-from ltl import gltl2ba, PathGraph
 
 INF = 999
 NO_PARENT = -1
-FOREVER = 10
+FOREVER = 10000
 OMEGA = 5
 
 
@@ -336,7 +335,7 @@ if __name__ == '__main__':
     f18 = 'Froom_0_2 && XGF(room_2_2 && XF(room_3_2 && XF(room_3_3 && XF(room_2_3))))'
     f19 = 'GF( room_1_0 && XF( room_3_0 && XF(room_3_2 && XF(room_1_2)))) || (F room_0_2 && XGF( room_2_2 && XF( room_3_2 && XF( room_3_3 && XF( room_2_3)))))'
 
-    formula = f19
+    formula = f1
     print('[INPUT FORMULA]', formula)
     
     goals, avoid_zones = path_finding(formula, debug=True)
