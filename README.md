@@ -7,9 +7,9 @@ Goal-conditioned reinforcement learning (RL) is a powerful approach for learning
 We use a robot from Safety Gym called Point, with one actuator for turning and another for moving forward or backward. An agent can observe the LiDAR information of its surrounding zones. Given this indirect geographical information, it has to visit and/or avoid certain zones to satisfy sampled LTL task specifications. The initial positions of the zones and the robot are random in every episode.
 
 ### Setup
-* Using conda and install [spot](https://spot.lre.epita.fr), see also [this](https://anaconda.org/conda-forge/spot).
+* Using conda and install `pygraphviz`.
     ```bash
-    conda install -c conda-forge spot
+    conda install -c conda-forge pygraphviz
     ```
 * Install [mujoco](https://www.roboti.us) and [mujoco-py](https://github.com/openai/mujoco-py).
 * Install [safty-gym](https://github.com/openai/safety-gym).
@@ -19,7 +19,6 @@ We use a robot from Safety Gym called Point, with one actuator for turning and a
     torch
     stable-baslines3
     graphviz
-    pygraphviz
     gym
     mujoco-py
     ```
@@ -139,7 +138,7 @@ We use a robot from Safety Gym called Point, with one actuator for turning and a
 </figure>
 
 ### References
-* spot, https://spot.lre.epita.fr
+* pygraphviz, https://pygraphviz.github.io
 * LTL2Action, https://github.com/LTL2Action/LTL2Action
 * gltl2ba, https://github.com/PatrickTrentin88/gltl2ba
 * safety-gym, https://github.com/openai/safety-gym
