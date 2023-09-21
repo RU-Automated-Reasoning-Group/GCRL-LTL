@@ -54,7 +54,7 @@ class ZoneRandomGoalEnv(gym.Wrapper):
     PRIMITVE_OBS_DIM = 12
     DT = 0.002
 
-    def __init__(self, env, primitives_path, goals_representation, temperature=1.25, use_primitves=True, rewards=[0, 1], device=torch.device('cuda:0'), max_timesteps=1000, debug=False):
+    def __init__(self, env, primitives_path, goals_representation, temperature=1.25, use_primitves=True, rewards=[0, 1], device=torch.device('cpu'), max_timesteps=1000, debug=False):
         super().__init__(env)
         self.goals = ['J', 'W', 'R', 'Y']
         self.goal_index = 0

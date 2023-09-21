@@ -1,5 +1,4 @@
 from typing import NamedTuple, Optional, Generator
-import copy
 
 import numpy as np
 import torch as th
@@ -68,11 +67,11 @@ class GCRolloutBuffer(RolloutBuffer):
 
 class GCPPO(PPO):
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.q_net = self.make_q_net()
-        self.non_terminal_clock = 0
         self.qf_coef = 0.5  # vf_coef = 0.5, policy_coef = 1.0
+        self.non_terminal_clock = 0
         
     def make_q_net(self) -> QNetwork:
         # NOTE: note from DQN, what does it mean?
@@ -114,7 +113,7 @@ class GCPPO(PPO):
             clip_range_vf = self.clip_range_vf(self._current_progress_remaining)
 
         entropy_losses = []
-        pg_losses, value_losses = [], []
+        pg_losses, value_losses, q_value_losses = [], [], []
         clip_fractions = []
 
         continue_training = True
@@ -176,19 +175,17 @@ class GCPPO(PPO):
 
                 # Get current Q-values estimates
                 current_q_values = self.q_net(rollout_data.observations)
-                #print(current_q_values, current_q_values.shape, type(current_q_values))  # (20, 4)
 
                 # Retrieve the q-values for the actions from the replay buffer
                 current_q_values = th.gather(current_q_values, dim=1, index=rollout_data.actions.long())
-                #print(current_q_values, current_q_values.shape, type(current_q_values)) # (20, 1)
 
                 # sparse rewards can infer dones
                 dones = rollout_data.rewards
-                dones_list = dones.numpy().tolist()
-                rev_dones_list = dones.numpy().tolist()
+                dones_list = dones.cpu().numpy().tolist()
+                rev_dones_list = dones.cpu().numpy().tolist()
                 rev_dones_list.reverse()
                 first_done_idx = dones_list.index(1) if 1 in dones_list else self.batch_size
-                last_done_idx = self.batch_size - rev_dones_list.index(1) if 1 in rev_dones_list else 1000
+                last_done_idx = self.batch_size - rev_dones_list.index(1) if 1 in rev_dones_list else self.batch_size
                 
                 if first_done_idx + self.non_terminal_clock > self.batch_size:
                     force_done_idx = self.batch_size - self.non_terminal_clock
@@ -197,7 +194,8 @@ class GCPPO(PPO):
                 self.non_terminal_clock = self.batch_size - last_done_idx
                 
                 target_q_values = rollout_data.rewards + (1 - dones) * self.gamma * values_pred
-                q_value_loss = F.smooth_l1_loss(current_q_values, target_q_values.unsqueeze(0))
+                q_value_loss = F.smooth_l1_loss(current_q_values, target_q_values.view(-1, 1))
+                q_value_losses.append(q_value_loss.item())
 
                 loss = policy_loss + self.ent_coef * entropy_loss + self.vf_coef * value_loss + self.qf_coef * q_value_loss
 
@@ -233,6 +231,7 @@ class GCPPO(PPO):
         self.logger.record("train/entropy_loss", np.mean(entropy_losses))
         self.logger.record("train/policy_gradient_loss", np.mean(pg_losses))
         self.logger.record("train/value_loss", np.mean(value_losses))
+        self.logger.record("train/q_value_loss", np.mean(q_value_losses))
         self.logger.record("train/approx_kl", np.mean(approx_kl_divs))
         self.logger.record("train/clip_fraction", np.mean(clip_fractions))
         self.logger.record("train/loss", loss.item())
@@ -244,3 +243,10 @@ class GCPPO(PPO):
         self.logger.record("train/clip_range", clip_range)
         if self.clip_range_vf is not None:
             self.logger.record("train/clip_range_vf", clip_range_vf)
+
+    def save_q_net(self, **kwargs) -> None:
+        self.q_net.save(**kwargs)
+
+    def load_q_net(self, **kwargs) -> QNetwork:
+        self.q_net.load(**kwargs)
+    
