@@ -13,6 +13,7 @@ from stable_baselines3.common.callbacks import EvalCallback
 
 from envs import ZonesEnv, ZoneRandomGoalEnv
 from envs.utils import get_named_goal_vector
+from gc_ppo import GCPPO
 
 
 def main(args):
@@ -37,7 +38,7 @@ def main(args):
 
     if algo == 'ppo':
         env = make_vec_env(env_fn, n_envs=num_cpus, seed=seed, vec_env_cls=SubprocVecEnv)
-        model = PPO(
+        model = GCPPO(
             policy='MlpPolicy',
             policy_kwargs=dict(activation_fn=nn.ReLU, net_arch=[512, 1024, 256]),
             env=env,
@@ -46,7 +47,7 @@ def main(args):
             gamma=0.998,
             n_epochs=10,
             n_steps=int(50000/num_cpus),
-            batch_size=1000,
+            batch_size=10,
             ent_coef=0.003,
             device=device,
         )
@@ -55,25 +56,26 @@ def main(args):
         new_logger = configure(log_path, ["stdout", "csv"])
         model.set_logger(new_logger)
 
-        eval_log_path = "logs/ppo_eval/{}/".format(exp_name)
-        eval_env_fn = lambda: ZoneRandomGoalEnv(
-            env=gym.make('Zones-8-v0', timeout=1000), 
-            primitives_path='models/primitives', 
-            goals_representation=get_named_goal_vector(),
-            use_primitves=True if execution_mode == 'primitives' else False,
-            rewards=[-0.001, 1],
-        )
-        eval_env = make_vec_env(eval_env_fn)
-        eval_callback = EvalCallback(
-            eval_env=eval_env, 
-            best_model_save_path=eval_log_path,
-            log_path=eval_log_path, 
-            eval_freq=100000/num_cpus,
-            n_eval_episodes=40,
-            deterministic=True,
-        )
+        # eval_log_path = "logs/ppo_eval/{}/".format(exp_name)
+        # eval_env_fn = lambda: ZoneRandomGoalEnv(
+        #     env=gym.make('Zones-8-v0', timeout=1000), 
+        #     primitives_path='models/primitives', 
+        #     goals_representation=get_named_goal_vector(),
+        #     use_primitves=True if execution_mode == 'primitives' else False,
+        #     rewards=[-0.001, 1],
+        # )
+        # eval_env = make_vec_env(eval_env_fn)
+        # eval_callback = EvalCallback(
+        #     eval_env=eval_env, 
+        #     best_model_save_path=eval_log_path,
+        #     log_path=eval_log_path, 
+        #     eval_freq=100000/num_cpus,
+        #     n_eval_episodes=40,
+        #     deterministic=True,
+        # )
     
-    model.learn(total_timesteps=total_timesteps, callback=eval_callback)
+    #model.learn(total_timesteps=total_timesteps, callback=eval_callback)
+    model.learn(total_timesteps=total_timesteps)
     model.save('{}_{}_model'.format(algo, seed))
 
 
