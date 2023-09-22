@@ -74,7 +74,6 @@ class GCPPO(PPO):
         self.non_terminal_clock = 0
         
     def make_q_net(self) -> QNetwork:
-        # NOTE: note from DQN, what does it mean?
         # Make sure we always have separate networks for features extractors etc
         net_args = dict(
             observation_space=self.observation_space,
@@ -193,7 +192,8 @@ class GCPPO(PPO):
                     last_done_idx = max(force_done_idx, last_done_idx)
                 self.non_terminal_clock = self.batch_size - last_done_idx
                 
-                target_q_values = rollout_data.rewards + (1 - dones) * self.gamma * values_pred
+                target_q_values = rollout_data.rewards + (1 - dones) * self.gamma * values_pred.detach()
+                
                 q_value_loss = F.smooth_l1_loss(current_q_values, target_q_values.view(-1, 1))
                 q_value_losses.append(q_value_loss.item())
 
@@ -248,5 +248,5 @@ class GCPPO(PPO):
         self.q_net.save(**kwargs)
 
     def load_q_net(self, **kwargs) -> QNetwork:
-        self.q_net.load(**kwargs)
+        return self.q_net.load(**kwargs)
     

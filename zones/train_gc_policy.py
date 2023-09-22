@@ -75,8 +75,8 @@ def main(args):
         )
     
     model.learn(total_timesteps=total_timesteps, callback=eval_callback)
-    model.save('{}_{}_model'.format(algo, seed))
-    model.save_q_net('{}_{}_q_net'.format(algo, seed))
+    model.save(path='{}_{}_model.zip'.format(algo, seed))
+    model.save_q_net(path='{}_{}_q_net.zip'.format(algo, seed))
 
 
 if __name__ == '__main__':
