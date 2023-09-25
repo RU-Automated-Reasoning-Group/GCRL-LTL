@@ -72,7 +72,7 @@ class GCPPO(PPO):
         self.q_net = self.make_q_net()
         self.qf_coef = 0.5  # vf_coef = 0.5, policy_coef = 1.0
         self.non_terminal_clock = 0
-        
+
     def make_q_net(self) -> QNetwork:
         # Make sure we always have separate networks for features extractors etc
         net_args = dict(
@@ -247,6 +247,12 @@ class GCPPO(PPO):
     def save_q_net(self, **kwargs) -> None:
         self.q_net.save(**kwargs)
 
-    def load_q_net(self, **kwargs) -> QNetwork:
-        return self.q_net.load(**kwargs)
+    @classmethod
+    def load_q_net(cls, path, device=th.device('cpu')) -> QNetwork:
+        cls = QNetwork  # make your life easier
+        return cls.load(path=path, device=device)
     
+    @classmethod
+    def load(cls, path, device=th.device('cpu')) -> PPO:
+        cls = PPO  # make your life easier
+        return cls.load(path=path, device=device)

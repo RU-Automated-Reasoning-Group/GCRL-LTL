@@ -84,7 +84,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--device', type=str, default='cpu')
     parser.add_argument('--timeout', type=int, default=1000)
-    parser.add_argument('--total_timesteps', type=int, default=1.5e7)
+    parser.add_argument('--total_timesteps', type=int, default=1.0e7)
     parser.add_argument('--algo', type=str, default='ppo', choices=('ppo'))
     parser.add_argument('--num_cpus', type=int, default=4)
     parser.add_argument('--seed', type=int, default=123)
