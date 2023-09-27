@@ -73,6 +73,10 @@ class GCPPO(PPO):
         self.qf_coef = 0.5  # vf_coef = 0.5, policy_coef = 1.0
         self.non_terminal_clock = 0
 
+        # EXP EQUAL
+        self.qf_coef = 1.0
+        self.vf_coef = 1.0
+
     def make_q_net(self) -> QNetwork:
         # Make sure we always have separate networks for features extractors etc
         net_args = dict(
@@ -178,21 +182,8 @@ class GCPPO(PPO):
                 # Retrieve the q-values for the actions from the replay buffer
                 current_q_values = th.gather(current_q_values, dim=1, index=rollout_data.actions.long())
 
-                # sparse rewards can infer dones
-                dones = rollout_data.rewards
-                dones_list = dones.cpu().numpy().tolist()
-                rev_dones_list = dones.cpu().numpy().tolist()
-                rev_dones_list.reverse()
-                first_done_idx = dones_list.index(1) if 1 in dones_list else self.batch_size
-                last_done_idx = self.batch_size - rev_dones_list.index(1) if 1 in rev_dones_list else self.batch_size
-                
-                if first_done_idx + self.non_terminal_clock > self.batch_size:
-                    force_done_idx = self.batch_size - self.non_terminal_clock
-                    dones[force_done_idx] = 1
-                    last_done_idx = max(force_done_idx, last_done_idx)
-                self.non_terminal_clock = self.batch_size - last_done_idx
-                
-                target_q_values = rollout_data.rewards + (1 - dones) * self.gamma * values_pred.detach()
+                # NOTE: make your life easier
+                target_q_values = rollout_data.advantages + rollout_data.returns
                 
                 q_value_loss = F.smooth_l1_loss(current_q_values, target_q_values.view(-1, 1))
                 q_value_losses.append(q_value_loss.item())
