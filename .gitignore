@@ -2,6 +2,7 @@
 *.gv
 *.pdf
 *.png
+*.zip
 /zones/logs
 
 # Byte-compiled / optimized / DLL files
