@@ -13,6 +13,9 @@ We use a robot from Safety Gym called Point, with one actuator for turning and a
     ```
 * Install [mujoco](https://www.roboti.us) and [mujoco-py](https://github.com/openai/mujoco-py).
 * Install [safty-gym](https://github.com/openai/safety-gym).
+    ```
+    pip install -e zones/envs/safety/safety-gym/
+    ```
 * Install required pip packages
     ```
     numpy

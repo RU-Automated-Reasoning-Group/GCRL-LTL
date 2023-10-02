@@ -1,7 +1,7 @@
 from gym.envs.registration import register
 
 from envs.safety.zones_env import ZonesEnv
-from envs.task_envs import ZonePrimitiveEnv, ZoneRandomGoalEnv
+from envs.task_envs import ZonePrimitiveEnv, ZoneRandomGoalEnv, ZoneRandomGoalContinualEnv
 
 
 ### Safety Envs
