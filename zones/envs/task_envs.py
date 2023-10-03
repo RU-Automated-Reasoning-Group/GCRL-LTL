@@ -1,12 +1,9 @@
 import os
+import random
 import torch
 import numpy as np
 import gym
 from stable_baselines3 import PPO
-
-# DEBUG
-import copy
-import random
 
 
 class ZonePrimitiveEnv(gym.Wrapper):
@@ -152,12 +149,10 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
     PRIMITVE_OBS_DIM = 12
     DT = 0.002
 
-    def __init__(self, env, primitives_path, zones_representation, temperature=1.25, use_primitves=True, rewards=[0, 1], device=torch.device('cpu'), max_timesteps=1000, debug=False):
+    def __init__(self, env, primitives_path, zones_representation, temperature=1.25, use_primitves=True, rewards=[0, 1], device=torch.device('cpu'), max_timesteps=1000, debug=False, reset_continual=False):
         super().__init__(env)
-
-        self.starts = ['J', 'W', 'R', 'Y', 'ANYWHERE']
+        self.start = 'ANYWHERE'
         self.goals = ['J', 'W', 'R', 'Y']
-        self.start_index = 0
         self.goal_index = 0
         self.zones_representation = zones_representation
         self.propositions = self.env.get_propositions()
@@ -175,18 +170,18 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
         self.temperature = temperature
         self.max_timesteps = max_timesteps
         self.executed_timesteps = 0
+        self.reset_continual = reset_continual
+        self.continue_traj = False
+        self.continue_start = None
         self.debug = debug
-
-        # DEBUG
-        self.saved_envs = []
 
     def is_alive(self):
         return self.executed_timesteps < self.max_timesteps
 
     def current_observation(self):
         obs = self.env.obs()
-        start = self.zones_representation[self.starts[self.start_index]]
-        goal = self.zones_representation[self.goals[self.goal_index]]
+        start = self.zones_representation[self.current_start()]
+        goal = self.zones_representation[self.current_goal()]
         return np.concatenate((obs, start, goal))
 
     def custom_observation(self, start:str, goal: str):
@@ -197,37 +192,28 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
 
     def reset(self):
         self.executed_timesteps = 0
-
-        # DEBUG
-        if len(self.saved_envs) > 100 and random.random() > 0.5:
-            self.env, start = copy.deepcopy(random.choice(self.saved_envs))
+        if self.reset_continual and self.continue_traj:
+            self.start = self.continue_start
             while True:
                 goal = random.choice(self.goals)
-                if goal != start:
+                if goal != self.start:
                     break
-            self.set_start(start)
-            self.set_goal(goal)
+            self.goal_index = self.goals.index(goal)
             obs = self.env.obs()
         else:
-            self.start_index = self.starts.index('ANYWHERE')
+            self.start = 'ANYWHERE'
             self.goal_index = (self.goal_index + 1) % len(self.goals)
             obs = super().reset()
 
-        start_vector = self.zones_representation[self.starts[self.start_index]]
-        goal_vector = self.zones_representation[self.goals[self.goal_index]]
+        start_vector = self.zones_representation[self.current_start()]
+        goal_vector = self.zones_representation[self.current_goal()]
         return np.concatenate((obs, start_vector, goal_vector))
 
     def current_start(self):
-        return self.starts[self.start_index]
+        return self.start
 
     def current_goal(self):
         return self.goals[self.goal_index]
-    
-    def set_start(self, start:str):
-        self.start_index = self.starts.index(start)
-
-    def set_goal(self, goal:str):
-        self.goal_index = self.goals.index(goal)
 
     def _translate_primitive(self, action):
         ob = self.env.obs()
@@ -253,6 +239,7 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
         next_obs, original_reward, env_done, info = self.env.step(action * self.temperature)
         truth_assignment = self.env.get_events()
         self.executed_timesteps += 1
+        success = False
 
         if not truth_assignment:
             reward = self.others_reward
@@ -261,6 +248,7 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
         else:
             if self.current_goal() in truth_assignment:  # TODO: improve this
                 reward = self.success_reward
+                success = True
                 done = True
                 if self.debug:
                     print('Reach zone [{}]'.format(self.current_goal()))
@@ -270,11 +258,14 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
                 done = env_done
                 info = {'zone': truth_assignment, 'task': self.current_goal()}
 
-        # DEBUG: the prob to store should be considered carefully
-        if done:
-            print('[Prepare to save]')
-            print(self.env)
-            self.saved_envs.append((copy.deepcopy(self.env), self.current_goal()))
-            print('[SAVE]', self.current_goal(), len(self.saved_envs))
+        if self.reset_continual and success and random.random() > 0.5:
+            self.continue_traj = True
+            self.continue_start = self.current_goal()
+            # required before reset()
+            self.env.done = False
+            self.env.steps = 0
+        else:
+            self.continue_traj = False
+            self.continue_start = None
 
         return self.current_observation(), reward, done, info

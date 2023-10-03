@@ -32,6 +32,7 @@ def main(args):
         use_primitves=True if execution_mode == 'primitives' else False,
         rewards=[0, 1],
         device=device,
+        reset_continual=True,
     )
 
     env = make_vec_env(env_fn, n_envs=num_cpus, seed=seed, vec_env_cls=SubprocVecEnv)
@@ -61,6 +62,7 @@ def main(args):
         use_primitves=True if execution_mode == 'primitives' else False,
         rewards=[-0.001, 1],
         device=device,
+        reset_continual=False,
     )
     eval_env = make_vec_env(eval_env_fn)
     eval_callback = EvalCallback(
