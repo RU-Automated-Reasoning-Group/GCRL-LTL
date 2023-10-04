@@ -45,7 +45,7 @@ def main(args):
         gamma=0.998,
         n_epochs=10,
         n_steps=int(50000/num_cpus),
-        batch_size=100,
+        batch_size=1000,
         ent_coef=0.003,
         device=device,
     )
