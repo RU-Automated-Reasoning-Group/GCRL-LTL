@@ -87,6 +87,7 @@ class GCPPO(PPO):
         super().__init__(**kwargs)
         self.gcvf = self.make_gcvf()
         self.gcvf_optimizer = th.optim.Adam(self.gcvf.parameters(), lr=kwargs['learning_rate'])
+        self.policy.obs_to_tensor = self.simple_obs_to_tensor
         
     def make_gcvf(self) -> GCVNetwork:
         # Make sure we always have separate networks for features extractors etc
@@ -348,21 +349,12 @@ class GCPPO(PPO):
         if self.clip_range_vf is not None:
             self.logger.record("train/clip_range_vf", clip_range_vf)
 
-    # TODO: try to use this function
-    def obs_to_tensor(self, observation: Union[np.ndarray, Dict[str, np.ndarray]]) -> Tuple[th.Tensor, bool]:
-        vectorized_env = False
+    def simple_obs_to_tensor(self, observation: Union[np.ndarray, Dict[str, np.ndarray]]) -> Tuple[th.Tensor, bool]:
+        vectorized_env = True
         observation = np.array(observation)
 
         if not isinstance(observation, dict):
-            print(observation)
-            print(observation.shape)
-            print(self.partial_observation_space)
-            print(self.partial_observation_space.shape)
-            
-            # Dict obs need to be handled separately
-            vectorized_env = is_vectorized_observation(observation, self.partial_observation_space)
-            # Add batch dimension if needed
-            observation = observation.reshape((-1,) + self.observation_space.shape)
+            observation = observation[:, self.ZONE_OBS_DIM:]
 
         observation = obs_as_tensor(observation, self.device)
         return observation, vectorized_env

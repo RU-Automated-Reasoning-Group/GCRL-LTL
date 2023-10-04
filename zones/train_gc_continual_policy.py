@@ -70,7 +70,7 @@ def main(args):
         best_model_save_path=eval_log_path,
         log_path=eval_log_path,
         eval_freq=100000/num_cpus,
-        n_eval_episodes=40,
+        n_eval_episodes=20,
         deterministic=True,
     )
     
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--device', type=str, default='cpu')
     parser.add_argument('--timeout', type=int, default=1000)
-    parser.add_argument('--total_timesteps', type=int, default=1.0e7)
+    parser.add_argument('--total_timesteps', type=int, default=1.5e7)
     parser.add_argument('--num_cpus', type=int, default=4)
     parser.add_argument('--seed', type=int, default=123)
     parser.add_argument('--exp_name', type=str, default='continual_exp')
