@@ -147,11 +147,12 @@ class ZoneRandomGoalEnv(gym.Wrapper):
 class ZoneRandomGoalContinualEnv(gym.Wrapper):
 
     PRIMITVE_OBS_DIM = 12
+    ZONE_OBS_DIM = 24
     DT = 0.002
 
     def __init__(self, env, primitives_path, zones_representation, temperature=1.25, use_primitves=True, rewards=[0, 1], device=torch.device('cpu'), max_timesteps=1000, debug=False, reset_continual=False):
         super().__init__(env)
-        self.start = 'ANYWHERE'
+        self.start = None
         self.goals = ['J', 'W', 'R', 'Y']
         self.goal_index = 0
         self.zones_representation = zones_representation
@@ -182,13 +183,13 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
         obs = self.env.obs()
         start = self.zones_representation[self.current_start()]
         goal = self.zones_representation[self.current_goal()]
-        return np.concatenate((obs, start, goal))
+        return np.concatenate((start, obs, goal))
 
-    def custom_observation(self, start:str, goal: str):
+    # NOTE: reaching doesn't require start zone obs, not so sure
+    def custom_observation(self, goal:str):
         obs = self.env.obs()
-        start = self.zones_representation[start]
         goal = self.zones_representation[goal]
-        return np.concatenate((obs, start, goal))
+        return np.concatenate((obs, goal))
 
     def reset(self):
         self.executed_timesteps = 0
@@ -207,7 +208,7 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
 
         start_vector = self.zones_representation[self.current_start()]
         goal_vector = self.zones_representation[self.current_goal()]
-        return np.concatenate((obs, start_vector, goal_vector))
+        return np.concatenate((start_vector, obs, goal_vector))
 
     def current_start(self):
         return self.start

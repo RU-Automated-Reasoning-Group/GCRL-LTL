@@ -5,12 +5,12 @@ import torch
 import torch.nn as nn
 import gym
 import numpy as np
-from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.callbacks import EvalCallback
 
+from gc_ppo import GCPPO
 from envs import ZonesEnv, ZoneRandomGoalContinualEnv
 from envs.utils import get_zone_vector
 
@@ -36,7 +36,7 @@ def main(args):
     )
 
     env = make_vec_env(env_fn, n_envs=num_cpus, seed=seed, vec_env_cls=SubprocVecEnv)
-    model = PPO(
+    model = GCPPO(
         policy='MlpPolicy',
         policy_kwargs=dict(activation_fn=nn.ReLU, net_arch=[512, 1024, 256]),
         env=env,
@@ -45,7 +45,7 @@ def main(args):
         gamma=0.998,
         n_epochs=10,
         n_steps=int(50000/num_cpus),
-        batch_size=1000,
+        batch_size=100,
         ent_coef=0.003,
         device=device,
     )
