@@ -8,9 +8,9 @@ import numpy as np
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.logger import configure
-from stable_baselines3.common.callbacks import EvalCallback
+from stable_baselines3.common.callbacks import CallbackList
 
-from gc_ppo import GCPPO
+from rl import GCPPO, GCCheckpointCallback, SimpleEvalCallback
 from envs import ZonesEnv, ZoneRandomGoalContinualEnv
 from envs.utils import get_zone_vector
 
@@ -50,11 +50,11 @@ def main(args):
         device=device,
     )
 
-    log_path = "logs/ppo/{}/".format(exp_name)
-    new_logger = configure(log_path, ["stdout", "csv"])
+    log_path = 'logs/ppo/{}/'.format(exp_name)
+    new_logger = configure(log_path, ['stdout', 'csv'])
     model.set_logger(new_logger)
 
-    eval_log_path = "logs/ppo_eval/{}/".format(exp_name)
+    eval_log_path = 'logs/ppo/{}/'.format(exp_name)
     eval_env_fn = lambda: ZoneRandomGoalContinualEnv(
         env=gym.make('Zones-8-v0', timeout=1000),
         primitives_path='models/primitives',
@@ -65,8 +65,9 @@ def main(args):
         reset_continual=False,
     )
     eval_env = make_vec_env(eval_env_fn)
-    eval_callback = EvalCallback(
+    eval_callback = SimpleEvalCallback(
         eval_env=eval_env, 
+        # NOTE: save GCPPO model directly is not available
         best_model_save_path=eval_log_path,
         log_path=eval_log_path,
         eval_freq=100000/num_cpus,
@@ -74,8 +75,15 @@ def main(args):
         deterministic=True,
     )
     
-    model.learn(total_timesteps=total_timesteps, callback=eval_callback)
-    model.save(path='{}_{}_model.zip'.format(exp_name, seed))
+    gc_checkpoint_callback = GCCheckpointCallback(
+        save_freq=100000/num_cpus,
+        save_path='logs/ppo_checkpoint/{}/'.format(exp_name),
+        name_prefix='gc_ppo',
+    )
+
+    callback = CallbackList([eval_callback, gc_checkpoint_callback])
+
+    model.learn(total_timesteps=total_timesteps, callback=callback)
 
 
 if __name__ == '__main__':

@@ -8,7 +8,7 @@ from gym import spaces
 from torch.nn import functional as F
 
 from stable_baselines3 import PPO
-from stable_baselines3.common.policies import BasePolicy
+from stable_baselines3.common.policies import BasePolicy, ActorCriticPolicy
 from stable_baselines3.common.buffers import DictRolloutBuffer, RolloutBuffer
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.vec_env import VecEnv
@@ -34,6 +34,7 @@ class GCVNetwork(BasePolicy):
         features_dim: int,
         net_arch: Optional[List[int]] = None,
         activation_fn: Type[nn.Module] = nn.ReLU,
+        normalize_images: bool = True,
     ):
         super(GCVNetwork, self).__init__(
             observation_space,
@@ -48,6 +49,8 @@ class GCVNetwork(BasePolicy):
         self.activation_fn = activation_fn
         self.features_extractor = features_extractor
         self.features_dim = features_dim
+        self.normalize_images = normalize_images
+
         gcvf_net = create_mlp(self.features_dim, 1, self.net_arch, self.activation_fn)
         self.gcvf_net = nn.Sequential(*gcvf_net)
 
@@ -61,7 +64,7 @@ class GCVNetwork(BasePolicy):
         return self.gcvf_net(self.extract_features(obs))
 
     def _predict(self, observation: th.Tensor, deterministic: bool = True) -> th.Tensor:
-        gc_value = self.forward(observation)#.reshape(-1)
+        gc_value = self.forward(observation)
         return gc_value
 
     def _get_constructor_parameters(self) -> Dict[str, Any]:
@@ -76,7 +79,7 @@ class GCVNetwork(BasePolicy):
             )
         )
         return data
-
+    
 
 class GCPPO(PPO):
 
@@ -349,12 +352,18 @@ class GCPPO(PPO):
         if self.clip_range_vf is not None:
             self.logger.record("train/clip_range_vf", clip_range_vf)
 
-    def simple_obs_to_tensor(self, observation: Union[np.ndarray, Dict[str, np.ndarray]]) -> Tuple[th.Tensor, bool]:
+    def simple_obs_to_tensor(self, observation: np.ndarray) -> Tuple[th.Tensor, bool]:
         vectorized_env = True
         observation = np.array(observation)
-
-        if not isinstance(observation, dict):
-            observation = observation[:, self.ZONE_OBS_DIM:]
-
+        observation = observation[:, self.ZONE_OBS_DIM:]
         observation = obs_as_tensor(observation, self.device)
         return observation, vectorized_env
+
+    def save_policy(self, path: str) -> ActorCriticPolicy:
+        self.policy.save(path)
+
+    def save_gcvf(self, path: str) -> GCVNetwork:
+        self.gcvf.save(path)
+
+    def save(self, **kwargs) -> None:
+        raise NotImplementedError
