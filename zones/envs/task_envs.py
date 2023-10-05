@@ -55,7 +55,18 @@ class ZoneRandomGoalEnv(gym.Wrapper):
     PRIMITVE_OBS_DIM = 12
     DT = 0.002
 
-    def __init__(self, env, primitives_path, goals_representation, temperature=1.25, use_primitves=True, rewards=[0, 1], device=torch.device('cpu'), max_timesteps=1000, debug=False):
+    def __init__(
+        self,
+        env,
+        primitives_path,
+        goals_representation, 
+        temperature=1.25,
+        use_primitves=True,
+        rewards=[0, 1],
+        device=torch.device('cpu'), 
+        max_timesteps=1000,
+        debug=False,
+    ):
         super().__init__(env)
         self.goals = ['J', 'W', 'R', 'Y']
         self.goal_index = 0
@@ -89,6 +100,11 @@ class ZoneRandomGoalEnv(gym.Wrapper):
         obs = self.env.obs()
         goal = self.goals_representation[goal]
         return np.concatenate((obs, goal))
+    
+    def fix_goal(self, goal):
+        assert goal in self.goals
+        self.goal_index = self.goals.index(goal)
+        self.goal_is_fixed = True
 
     def reset(self):
         self.executed_timesteps = 0
@@ -150,7 +166,19 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
     ZONE_OBS_DIM = 24
     DT = 0.002
 
-    def __init__(self, env, primitives_path, zones_representation, temperature=1.25, use_primitves=True, rewards=[0, 1], device=torch.device('cpu'), max_timesteps=1000, debug=False, reset_continual=False):
+    def __init__(
+        self, 
+        env, 
+        primitives_path, 
+        zones_representation, 
+        temperature=1.25, 
+        use_primitves=True, 
+        rewards=[0, 1], 
+        device=torch.device('cpu'), 
+        max_timesteps=1000, 
+        debug=False, 
+        reset_continual=False
+    ):
         super().__init__(env)
         self.start = None
         self.goals = ['J', 'W', 'R', 'Y']

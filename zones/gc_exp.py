@@ -4,11 +4,12 @@ import random
 import torch
 import gym
 import numpy as np
-from stable_baselines3 import PPO
+from stable_baselines3.common.policies import ActorCriticPolicy
 
 from envs import ZonesEnv, ZoneRandomGoalEnv
 from envs.utils import get_zone_vector
-from algo import path_finding, reaching
+from algo import path_finding, gc_reaching
+from rl import GCVNetwork
 from sampler import TaskSampler
 
 
@@ -16,7 +17,8 @@ class TaskConfig:
     def __init__(self, args):
         self.task = args.task
         self.seed = args.seed
-        self.rl_model_path = args.rl_model_path
+        self.policy_path = args.policy_path
+        self.gcvf_path = args.gcvf_path
         self.eval_repeats = args.eval_repeats
         self.device = torch.device(args.device)
         self.init_task_params()
@@ -46,8 +48,9 @@ def exp(config):
     seed = config.seed
     device = config.device
 
-    model = PPO.load(config.rl_model_path, device=device)
-    
+    policy = ActorCriticPolicy.load(path=config.policy_path, device=device)
+    gcvf = GCVNetwork.load(path=config.gcvf_path, device=device)
+
     num_success, num_dangerous = 0, 0
     total_rewards = 0
     total_omega = 0
@@ -87,7 +90,7 @@ def exp(config):
             )
             env.reset()
 
-            task_info = reaching(env, model, GOALS, AVOID_ZONES, value_threshold=config.value_threshold, device=device)
+            task_info = gc_reaching(env, policy, gcvf, GOALS, AVOID_ZONES, value_threshold=config.value_threshold, device=device)
             if task_info['complete']:
                 num_success += 1
                 total_rewards += pow(0.998, env.executed_timesteps)
@@ -121,7 +124,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', type=int, default=123)
     parser.add_argument('--task', type=str, default='avoid', choices=('avoid', 'chain', 'stable', 'traverse'))
-    parser.add_argument('--rl_model_path', type=str, default='models/goal-conditioned/best_model_ppo_8')
+    parser.add_argument('--policy_path', type=str, default='models/gc_ppo_policy.zip')
+    parser.add_argument('--gcvf_path', type=str, default='models/gc_ppo_gcvf.zip')
     parser.add_argument('--eval_repeats', type=int, default=20)
     parser.add_argument('--device', type=str, default='cpu')
     
