@@ -7,7 +7,55 @@ from stable_baselines3.common.vec_env import sync_envs_normalization
 
 
 class CollectRolloutCallback(BaseCallback):
-    pass
+
+    def __init__(self, traj_buffer, verbose: int = 0):
+        super().__init__(verbose)
+        self.traj_buffer = traj_buffer
+        self.goals = []
+
+    def _on_rollout_start(self) -> None:
+        print(self.training_env)
+        print(self.training_env.unwrapped)
+        print(self.model.rollout_buffer)
+        print('WTF', self.training_env.env_method('current_env_index'))
+        print(self.training_env.env_method.current_env_index())
+        exit()
+        pass
+        # self.goals.append(self.training_env.current_goal())
+        # print(self.model)
+        # print(self.training_env)
+        # print(dir(self.training_env))
+        # print(self.training_env._get_indices(None))
+        # print(self.training_env.num_envs)
+        # print(self.training_env.processes)
+        # ['__abstractmethods__', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', 
+        #  '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', 
+        #  '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', 
+        #  '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', 
+        #  '__subclasshook__', '__weakref__', '_abc_cache', '_abc_negative_cache', '_abc_negative_cache_version', 
+        #  '_abc_registry', '_get_indices', '_get_target_remotes', 'action_space', 'close', 'closed', 'env_is_wrapped', 
+        #  'env_method', 'get_attr', 'get_images', 'getattr_depth_check', 'metadata', 'num_envs', 'observation_space', 
+        #  'processes', 'remotes', 'render', 'reset', 'seed', 'set_attr', 'step', 'step_async', 'step_wait', 'unwrapped', 'waiting', 'work_remotes']
+    
+    def _on_rollout_end(self) -> None:
+        model = self.model
+        env = self.training_env
+        # 1st rollout
+        if env.reset_continual and env.success and env.current_start() == 'ANYWHERE':
+            env.rollout_buffer.add_rollout(model.rollout_buffer)
+            self.goals.append(env.current_goal())
+        elif env.reset_continual and env.start != 'ANYWHERE':
+            assert env.current_start() == self.goals[0]
+            if env.success:
+                self.goals.append(env.current_goals)
+                env.rollout_buffer.add_rollout(model.rollout_buffer)
+                env.rollout_buffer.push_rollout()
+            else:
+                env.rollout_buffer.revoke_rollout()
+                self.goals = []
+
+    def _on_step(self) -> bool:
+        return True
 
 
 class PolicyCheckpointCallback(BaseCallback):

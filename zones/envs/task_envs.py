@@ -4,6 +4,7 @@ import torch
 import numpy as np
 import gym
 from stable_baselines3 import PPO
+from multiprocessing import current_process
 
 
 class ZonePrimitiveEnv(gym.Wrapper):
@@ -180,7 +181,7 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
         reset_continual=False
     ):
         super().__init__(env)
-        self.start = None
+        self.start = 'ANYWHERE'
         self.goals = ['J', 'W', 'R', 'Y']
         self.goal_index = 0
         self.zones_representation = zones_representation
@@ -200,8 +201,9 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
         self.max_timesteps = max_timesteps
         self.executed_timesteps = 0
         self.reset_continual = reset_continual
-        self.continue_traj = 0
+        self.continue_traj = False
         self.continue_start = None
+        self.success = False
         self.debug = debug
 
     def is_alive(self):
@@ -219,7 +221,9 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
 
     def reset(self):
         self.executed_timesteps = 0
+        self.success = False
         if self.reset_continual and self.continue_traj:
+            self.continue_traj = False
             self.start = self.continue_start
             while True:
                 goal = random.choice(self.goals)
@@ -228,6 +232,8 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
             self.goal_index = self.goals.index(goal)
             obs = self.env.obs()
         else:
+            self.continue_traj = False
+            self.continue_start = None
             self.start = 'ANYWHERE'
             self.goal_index = (self.goal_index + 1) % len(self.goals)
             obs = super().reset()
@@ -240,6 +246,11 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
 
     def current_goal(self):
         return self.goals[self.goal_index]
+
+    def current_env_index(self):
+        p = current_process()
+        print(p._identity[0])
+        return p._identity[0]
 
     def _translate_primitive(self, action):
         ob = self.env.obs()
@@ -284,14 +295,16 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
                 done = env_done
                 info = {'zone': truth_assignment, 'task': self.current_goal()}
 
-        if self.reset_continual and success and random.random() > 0.9 and self.continue_traj <= 1:
-            self.continue_traj_idx += 1
+        if self.reset_continual and success and random.random() > 0.9 and not self.continue_traj:
+            self.continue_traj = True
             self.continue_start = self.current_goal()
             # required before reset()
             self.env.done = False
             self.env.steps = 0
         else:
-            self.continue_traj = -1
+            self.continue_traj = False
             self.continue_start = None
+        
+        self.success = success
 
         return self.current_observation(), reward, done, info

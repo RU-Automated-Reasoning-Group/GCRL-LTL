@@ -3,6 +3,7 @@ from typing import Any, Dict, Generator, List, Optional, Union
 import numpy as np
 import torch
 from gym import spaces
+from stable_baselines3.common.buffers import RolloutBuffer
 
 
 class TrajectoryBuffer:
@@ -17,7 +18,7 @@ class TrajectoryBuffer:
     """
     def __init__(
         self, 
-        traj_length: int = 4,
+        traj_length: int = 2,
         buffer_size: int = 10000,
         device: Union[torch.device, str] = "cpu", 
         n_envs: int = 1,
@@ -31,7 +32,13 @@ class TrajectoryBuffer:
     def reset(self) -> None:
         self.rollouts = np.zeros((self.buffer_size * self.traj_length, self.n_envs), dtype=np.float32)
     
-    def add_rollout(self, ) -> None:
+    def add_rollout(self, rollout_buffer: RolloutBuffer) -> None:
+        pass
+
+    def revoke_rollout(self) -> None:
+        pass
+
+    def push_rollout(self) -> None:
         pass
 
     def add(self, ) -> None:

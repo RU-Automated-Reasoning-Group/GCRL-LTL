@@ -147,9 +147,7 @@ class GCPPO(PPO):
             with th.no_grad():
                 # Convert to pytorch tensor or to TensorDict
                 obs_tensor = obs_as_tensor(self._last_obs, self.device)
-                # Truncate obs_tensor
-                truncated_obs_tensor = obs_tensor[:, self.ZONE_OBS_DIM:]
-                actions, values, log_probs = self.policy.forward(truncated_obs_tensor)
+                actions, values, log_probs = self.policy.forward(obs_tensor)
             actions = actions.cpu().numpy()
 
             # Rescale and perform action
@@ -180,9 +178,7 @@ class GCPPO(PPO):
         with th.no_grad():
             # Compute value for the last timestep
             obs_tensor = obs_as_tensor(new_obs, self.device)
-            # Truncate obs_tensor
-            truncated_obs_tensor = obs_tensor[:, self.ZONE_OBS_DIM:]
-            _, values, _ = self.policy.forward(truncated_obs_tensor)
+            _, values, _ = self.policy.forward(obs_tensor)
 
         rollout_buffer.compute_returns_and_advantage(last_values=values, dones=dones)
 
