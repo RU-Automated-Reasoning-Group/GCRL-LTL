@@ -6,7 +6,7 @@ import gym
 import numpy as np
 from stable_baselines3.common.policies import ActorCriticPolicy
 
-from envs import ZonesEnv, ZoneRandomGoalEnv
+from envs import ZonesEnv, ZoneRandomGoalEnv, ZoneRandomGoalContinualEnv
 from envs.utils import get_zone_vector
 from algo import path_finding, gc_reaching
 from rl import GCVNetwork

@@ -190,7 +190,7 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
         self.primitives = []
         for direction in ['pos_x', 'neg_x', 'pos_y', 'neg_y']:
             self.primitives.append(PPO.load(os.path.join(self.primitives_path, direction), device=device))
-        self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(124,), dtype=np.float32)
+        self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(100,), dtype=np.float32)
         if self.use_primitves:
             self.action_space = gym.spaces.Discrete(len(self.primitives))
         else:
@@ -200,7 +200,7 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
         self.max_timesteps = max_timesteps
         self.executed_timesteps = 0
         self.reset_continual = reset_continual
-        self.continue_traj = False
+        self.continue_traj = 0
         self.continue_start = None
         self.debug = debug
 
@@ -209,11 +209,9 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
 
     def current_observation(self):
         obs = self.env.obs()
-        start = self.zones_representation[self.current_start()]
         goal = self.zones_representation[self.current_goal()]
-        return np.concatenate((start, obs, goal))
+        return np.concatenate((obs, goal))
 
-    # NOTE: reaching doesn't require start zone obs, not so sure
     def custom_observation(self, goal:str):
         obs = self.env.obs()
         goal = self.zones_representation[goal]
@@ -234,9 +232,8 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
             self.goal_index = (self.goal_index + 1) % len(self.goals)
             obs = super().reset()
 
-        start_vector = self.zones_representation[self.current_start()]
         goal_vector = self.zones_representation[self.current_goal()]
-        return np.concatenate((start_vector, obs, goal_vector))
+        return np.concatenate((obs, goal_vector))
 
     def current_start(self):
         return self.start
@@ -287,14 +284,14 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
                 done = env_done
                 info = {'zone': truth_assignment, 'task': self.current_goal()}
 
-        if self.reset_continual and success and random.random() > 0.5:
-            self.continue_traj = True
+        if self.reset_continual and success and random.random() > 0.9 and self.continue_traj <= 1:
+            self.continue_traj_idx += 1
             self.continue_start = self.current_goal()
             # required before reset()
             self.env.done = False
             self.env.steps = 0
         else:
-            self.continue_traj = False
+            self.continue_traj = -1
             self.continue_start = None
 
         return self.current_observation(), reward, done, info

@@ -10,7 +10,7 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.callbacks import CallbackList
 
-from rl import GCPPO, GCCheckpointCallback, SimpleEvalCallback
+from rl import GCPPO, PolicyCheckpointCallback, SimpleEvalCallback
 from envs import ZonesEnv, ZoneRandomGoalContinualEnv
 from envs.utils import get_zone_vector
 
@@ -75,13 +75,13 @@ def main(args):
         deterministic=True,
     )
     
-    gc_checkpoint_callback = GCCheckpointCallback(
+    policy_checkpoint_callback = PolicyCheckpointCallback(
         save_freq=100000/num_cpus,
         save_path='logs/ppo_checkpoint/{}/'.format(exp_name),
         name_prefix='gc_ppo',
     )
 
-    callback = CallbackList([eval_callback, gc_checkpoint_callback])
+    callback = CallbackList([eval_callback, policy_checkpoint_callback])
 
     model.learn(total_timesteps=total_timesteps, callback=callback)
 

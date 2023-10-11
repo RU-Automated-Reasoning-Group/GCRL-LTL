@@ -6,9 +6,13 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.vec_env import sync_envs_normalization
 
 
-class GCCheckpointCallback(BaseCallback):
+class CollectRolloutCallback(BaseCallback):
+    pass
+
+
+class PolicyCheckpointCallback(BaseCallback):
     """
-    Callback for saving a model every ``save_freq`` calls
+    Callback for saving a ActorCritic policy in model every ``save_freq`` calls
     to ``env.step()``.
 
     .. warning::
@@ -24,7 +28,7 @@ class GCCheckpointCallback(BaseCallback):
     """
 
     def __init__(self, save_freq: int, save_path: str, name_prefix: str = 'gc_ppo', verbose: int = 0):
-        super(GCCheckpointCallback, self).__init__(verbose)
+        super(PolicyCheckpointCallback, self).__init__(verbose)
         self.save_freq = save_freq
         self.save_path = save_path
         self.name_prefix = name_prefix
@@ -37,11 +41,9 @@ class GCCheckpointCallback(BaseCallback):
     def _on_step(self) -> bool:
         if self.n_calls % self.save_freq == 0:
             policy_path = os.path.join(self.save_path, f"{self.name_prefix}_policy_{self.num_timesteps}_steps")
-            gcvf_path = os.path.join(self.save_path, f"{self.name_prefix}_gcvf_{self.num_timesteps}_steps")
             self.model.save_policy(path=policy_path)
-            self.model.save_gcvf(path=gcvf_path)
             if self.verbose > 1:
-                print(f"Saving ActorCriticPolicy and GCVFNetwork checkpoint to {self.save_path}")
+                print(f"Saving ActorCriticPolicy checkpoint to {self.save_path}")
         return True
 
 

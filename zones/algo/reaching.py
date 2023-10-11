@@ -95,8 +95,30 @@ def gc_reaching(env, policy, gcvf, goal_zones, total_avoid_zones, value_threshol
     zone_history = []
     task_history = []
 
+    # from PIL import Image
+    # image = Image.fromarray(env.render(mode='rgb_array', camera_id=1, height=400, width=400))
+    # image.save('start.png')
+
+    import copy
+    anywhere_ob = env.goals_representation['ANYWHERE']
+    red_ob = env.goals_representation['R']
+    jetblack_ob = env.goals_representation['J']
+    white_ob = env.goals_representation['W']
+    yellow_ob = env.goals_representation['Y']
+
     with torch.no_grad():
         while env.is_alive():
+
+            # DEBUG
+            _ob = copy.deepcopy(ob)
+            _ob[-24:] = white_ob
+
+            #print('[GoalValue] [ ANYWHERE] -> [GOAL]', gcvf.predict(np.concatenate((anywhere_ob, _ob))))
+            #print('[GoalValue] [JET BLACK] -> [GOAL]', gcvf.predict(np.concatenate((jetblack_ob, _ob))))
+            #print('[GoalValue] [    WHITE] -> [GOAL]', gcvf.predict(np.concatenate((white_ob, _ob))))
+            #print('[GoalValue] [      RED] -> [GOAL]', gcvf.predict(np.concatenate((red_ob, _ob))))
+            print('[GoalValue] [   YELLOW] -> [GOAL]', gcvf.predict(np.concatenate((yellow_ob, _ob))))
+
             confidence = False
             if avoid_zones:
                 avoid_zones_ob = [env.custom_observation(goal=avoid_zone) for avoid_zone in avoid_zones]
