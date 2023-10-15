@@ -1,5 +1,5 @@
-from algo import buffer, networks
-from envs.env_utils import DiscretizedActionEnv
+from algo.gcsl_utils import buffer, networks
+from algo.envs.env_utils import DiscretizedActionEnv
 from gym.spaces import Box, Discrete
 import numpy as np
 

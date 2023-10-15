@@ -81,45 +81,6 @@ class MLPValueNetwork(nn.Module):
         v = self.v(torch.cat([obs, goal], dim=-1))
         return torch.squeeze(v, -1)
 
-
-# class ReplayBuffer:
-#     """
-#     A simple FIFO experience replay buffer for DDPG agents.
-#     """
-
-#     def __init__(self, obs_dim, act_dim, goal_dim, size):
-#         self.obs_buf = np.zeros(combined_shape(
-#             size, obs_dim), dtype=np.float32)
-#         self.obs2_buf = np.zeros(combined_shape(
-#             size, obs_dim), dtype=np.float32)
-#         self.act_buf = np.zeros(combined_shape(
-#             size, act_dim), dtype=np.float32)
-#         self.goal_buf = np.zeros(combined_shape(
-#             size, goal_dim), dtype=np.float32)
-#         self.rew_buf = np.zeros(size, dtype=np.float32)
-#         self.done_buf = np.zeros(size, dtype=np.float32)
-#         self.ptr, self.size, self.max_size = 0, 0, size
-
-#     def store(self, obs, act, goal, rew, next_obs, done):
-#         self.obs_buf[self.ptr] = obs
-#         self.obs2_buf[self.ptr] = next_obs
-#         self.act_buf[self.ptr] = act
-#         self.goal_buf[self.ptr] = goal
-#         self.rew_buf[self.ptr] = rew
-#         self.done_buf[self.ptr] = done
-#         self.ptr = (self.ptr+1) % self.max_size
-#         self.size = min(self.size+1, self.max_size)
-
-#     def sample_batch(self, batch_size=32):
-#         idxs = np.random.randint(0, self.size, size=batch_size)
-#         batch = dict(obs=self.obs_buf[idxs],
-#                      obs2=self.obs2_buf[idxs],
-#                      act=self.act_buf[idxs],
-#                      goal=self.goal_buf[idxs],
-#                      rew=self.rew_buf[idxs],
-#                      done=self.done_buf[idxs])
-#         return {k: torch.as_tensor(v, dtype=torch.float32) for k, v in batch.items()}
-
 class ReplayBuffer:
     """
     A simple FIFO experience replay buffer for DDPG agents.
@@ -216,7 +177,6 @@ class value_policy:
 
         # Create actor-critic module and target networks
         ac_kwargs = dict(hidden_sizes=[self.hid]*self.l)
-        # self.ac = actor_critic(self.env.observation_space, self.env.goal_space, ** ac_kwargs)
         # observation_space <- goal_space
         self.ac = actor_critic(
             self.env.wrapped_env.goal_space, self.env.wrapped_env.goal_space, ** ac_kwargs)
@@ -227,12 +187,10 @@ class value_policy:
 
         # Count variables (protip: try to get a feel for how different size networks behave!)
         self.var_counts = tuple(count_vars(module) for module in [self.ac.v])
-        # logger.log('\nNumber of parameters: \t pi: %d, \t q: %d\n'%var_counts)
 
         # Set up optimizers for v-function
         self.v_optimizer = Adam(self.ac.v.parameters(), lr=self.v_lr)
 
-    # Set up model saving
 
     # logger.setup_pytorch_saver(ac)
     def load_policy(self, filename):
@@ -241,21 +199,10 @@ class value_policy:
     def update(self, data, node_covering_size):
         # First run one gradient descent step for Q.
         self.v_optimizer.zero_grad()
-        loss_v, loss_info = self.compute_loss_v(data, node_covering_size)
+        loss_v, _ = self.compute_loss_v(data, node_covering_size)
         loss_v.backward()
         self.v_optimizer.step()
         return loss_v
-
-        # Record things
-        # logger.store(LossQ=loss_q.item(), LossPi=loss_pi.item(), **loss_info)
-
-        # # Finally, update target networks by polyak averaging.
-        # with torch.no_grad():
-        #     for p, p_targ in zip(self.ac.parameters(), self.ac_targ.parameters()):
-        #         # NB: We use an in-place operations "mul_", "add_" to update target
-        #         # params, as opposed to "mul" and "add", which would make new tensors.
-        #         p_targ.data.mul_(self.polyak)
-        #         p_targ.data.add_((1 - self.polyak) * p.data)
 
     def execute(self, dataset, penalty, node_covering_size):
 
@@ -265,7 +212,6 @@ class value_policy:
         rtgs = np.zeros_like(rews, dtype=np.float32)
         for i in reversed(range(n)):
             rtgs[i] = rews[i] + self.gamma * (rtgs[i + 1] if i + 1 < n else 0)
-            # rtgs[i] = rews[i] + (rtgs[i + 1] if i + 1 < n else 0)
             dataset[i]['rew'] = rtgs[i]
         
         # check tail for failed path
@@ -281,20 +227,11 @@ class value_policy:
                     break
                 penalty_startidx = i
 
-            # with open(os.getcwd()+"/gcsl_fetch/DebugLog.txt", "a") as f:
-            #     f.write('from ' + str(penalty_startidx) +
-            #             ' to ' + str(length)+":")
-            #     f.write(str(dataset[penalty_startidx]['obs']))
-            #     f.write(str(dataset[length-1]['obs'])+"\n")
-            # f.close()
-
             for j in range(penalty_startidx, length):
                 dataset[j]['rew'] =-1
 
         for i in range(n):
             t = dataset[i]
-            # self.replay_buffer.store(
-            #     t['obs'], t['act'], t['goal'], t['rew'], t['obs2'], t['done'])
             self.replay_buffer.store(
                 t['obs'], t['act'], t['goal'], t['rew'], t['obs2'], t['done'], 
                 self.get_node_by_state(t['obs'],node_covering_size), 
@@ -337,13 +274,6 @@ class value_policy:
         g_node = torch.as_tensor(g_node, dtype=torch.float32)
         v = self.ac(o_node, g)
 
-        # with open(os.getcwd()+"/gcsl_fetch/DebugLog.txt", "a") as f:
-        #     f.write(str(o_node)+"\n")
-        #     f.write(str(g)+"\n")
-        #     f.write(str(r)+"\n")
-        #     f.write(str(v)+"\n")
-        # f.close()
-        
         # MSE loss against Bellman backup
         loss_v = ((v - r)**2).mean()
 
@@ -359,30 +289,6 @@ class value_policy:
         '''
         return self.ac.forward(state_node, goal)
 
-    def end_epoch_handling(self, t):
-        # End of epoch handling
-
-        # Save model
-        # if (epoch % save_freq == 0) or (epoch == epochs):
-        #     logger.save_state({'env': env}, None)
-
-        # Test the performance of the deterministic version of the agent.
-        # self.test_agent()
-
-        # Log info about epoch
-        # logger.log_tabular('Epoch', epoch)
-        # logger.log_tabular('EpRet', with_min_and_max=True)
-        # logger.log_tabular('TestEpRet', with_min_and_max=True)
-        # logger.log_tabular('EpLen', average_only=True)
-        # logger.log_tabular('TestEpLen', average_only=True)
-        # logger.log_tabular('TotalEnvInteracts', t)
-        # logger.log_tabular('QVals', with_min_and_max=True)
-        # logger.log_tabular('LossPi', average_only=True)
-        # logger.log_tabular('LossQ', average_only=True)
-        # logger.log_tabular('Time', time.time()-start_time)
-        # logger.dump_tabular()
-        return
-
     def test_agent(self):
         for j in range(self.num_test_episodes):
             o, d, ep_ret, ep_len = self.test_env.reset(), False, 0, 0
@@ -391,4 +297,3 @@ class value_policy:
                 o, r, d, _ = self.test_env.step(self.get_action(o, 0))
                 ep_ret += r
                 ep_len += 1
-            # logger.store(TestEpRet=ep_ret, TestEpLen=ep_len)

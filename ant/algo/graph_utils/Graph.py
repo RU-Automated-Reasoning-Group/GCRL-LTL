@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import collections as mc
 from collections import deque
-from algo.utils import *
+from algo.graph_utils.utils import *
 import warnings
 import random
 
@@ -49,109 +49,6 @@ class Graph:
             self.neighbors[childrenidx].append((parentidx, edgecost))
             self.neighbors[parentidx].append((childrenidx, edgecost))
 
-    # updating shortest path algo1
-    def BellmanFord(self, source_idx, goal, value_policy):
-        # bellman-ford algo
-        negative_weight_cycle = False
-        self.distance.clear()
-        self.predecessor.clear()
-        V = len(self.vertices)
-
-        # initialize graph
-        for i in range(V):
-            self.distance.append(float('inf'))
-            self.predecessor.append(-1)
-        self.distance[source_idx] = 0
-
-        values_cache = {}
-
-        # relax edges repeatedly |V|-1 times
-        for i in range(V-1):
-            for edge in self.edges:
-                # edge (u,v) from u ot v
-                u = edge[1]
-                v = edge[0]
-
-                if v in values_cache.keys():
-                    value = values_cache[v]
-                else:
-                    value = value_policy.get_value(self.vertices[v], goal)
-                    values_cache[v] = value
-
-                if value > 0:
-                    value = 0
-                weight = edge[2] - value
-                # weight = 0 - value_policy.get_value(self.vertices[v], goal)
-                # if weight < 0:
-                #     weight = 0
-
-                if self.distance[u] + weight < self.distance[v]:
-                    self.distance[v] = self.distance[u] + weight
-                    self.predecessor[v] = u
-
-        # check for negative-weight cycles
-        for edge in self.edges:
-            u = edge[1]
-            v = edge[0]
-            if v in values_cache.keys():
-                value = values_cache[v]
-            else:
-                value = value_policy.get_value(self.vertices[v], goal)
-                values_cache[v] = value
-
-            if value > 0:
-                value = 0
-            # weight = edge[2] - value
-            weight = - value
-
-            if self.distance[u] != float('inf') and self.distance[u] + weight < self.distance[v]:
-                negative_weight_cycle = True
-                break
-
-        return negative_weight_cycle
-
-    # # updating shortest path algo2 with reward -[1/0]
-    # def Dijkstra(self, source_idx, goal, value_policy):
-    #     '''
-    #     Dijkstra algorithm for finding shortest path from start position to end.
-    #     '''
-
-    #     # build dijkstra
-    #     nodes = list(self.neighbors.keys())
-    #     self.distance.clear()
-    #     self.predecessor.clear()
-    #     values_cache = {}
-    #     # initialize graph
-    #     for node in self.vertices:
-    #         self.distance.append(float('inf'))
-    #         self.predecessor.append(-1)
-    #     self.distance[source_idx] = 0
-
-    #     while nodes:
-    #         curNode = min(nodes, key=lambda node: self.distance[node])
-    #         nodes.remove(curNode)
-    #         if self.distance[curNode] == float('inf'):
-    #             break
-
-    #         for neighbor, cost in self.neighbors[curNode]:
-    #             if neighbor in values_cache.keys():
-    #                 value = values_cache[neighbor]
-    #             else:
-    #                 value = value_policy.get_value(
-    #                     self.vertices[neighbor], goal)
-    #                 values_cache[neighbor] = value
-
-    #             if value > 0:
-    #                 value = 0
-    #             # weight = cost - value
-    #             weight = - value
-    #             newCost = self.distance[curNode] + weight
-    #             if newCost < self.distance[neighbor]:
-    #                 self.distance[neighbor] = newCost
-    #                 self.predecessor[neighbor] = curNode
-
-    #     return
-
     # updating shortest path algo2 with reward[0/1]
     def Dijkstra(self, source_idx, goal, value_policy):
         '''
@@ -176,11 +73,17 @@ class Graph:
 
             for neighbor, cost in self.neighbors[curNode]:
                 value = value_policy.get_value(self.vertices[neighbor], goal)
-                # value = value_policy.get_value(self.vertices[curNode],self.vertices[neighbor])
 
                 weight = 1 - value
                 if weight < 0:
                     weight = 0
+                
+                # if value <= 0:
+                #     value = 1e-6
+                # elif value >= 1:
+                #     value = 1 - 1e-6
+                # weight = -math.log(value)
+
                 newCost = self.distance[curNode] + weight
                 if newCost < self.distance[neighbor]:
                     self.distance[neighbor] = newCost
@@ -238,11 +141,6 @@ class Graph:
             res.append(cur_nodeidx)
             cur_nodeidx = self.predecessor[cur_nodeidx]
 
-        # with open("./code/gcsl_ant/DebugLog.txt", "a") as f:
-        #     f.write(str(goal)+"\n")
-        #     f.write(str(self.vertices[closest_nodeidx])+"\n")
-        #     f.write(str(len(res))+"\n")
-        # f.close()
         return res
 
     def get_random_start_pos(self):

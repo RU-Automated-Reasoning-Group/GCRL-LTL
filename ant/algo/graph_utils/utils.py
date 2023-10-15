@@ -60,33 +60,6 @@ class Box_obstacle():
 def distance(x, y):
     return np.linalg.norm(np.array(x) - np.array(y))
 
-# def Intersection(line, center, radius):
-#     ''' Check line-sphere (circle) intersection '''
-
-#     ###
-#     # line intersect with circle
-#     # line: p' = p + dirn * t
-#     # circle: (p'.x - obs.x)^2 + (p'.y - obs.y)^2 = r^2
-#     # => (dirn.x^2 + dirn.y^2) * t^2 + 2(dirnx * (p.x - obs.x) + dirn.y * (p.y - obs.y)) * t + (p.x^2 + p.y^2 - r^2) = 0
-#     # b^2 - 4 * a * c >? 0
-#     ###
-#     a = np.dot(line.dirn, line.dirn)
-#     b = 2 * np.dot(line.dirn, line.p - center)
-#     c = np.dot(line.p - center, line.p - center) - radius * radius
-
-#     discriminant = b * b - 4 * a * c
-#     if discriminant < 0:
-#         return False
-
-#     t1 = (-b + np.sqrt(discriminant)) / (2 * a)
-#     t2 = (-b - np.sqrt(discriminant)) / (2 * a)
-
-#     # restrict the line to a segment
-#     if (t1 < 0 and t2 < 0) or (t1 > line.dist and t2 > line.dist):
-#         return False
-
-#     return True
-
 
 def Draw_GridWorld(ax, maze_structure, maze_scaling):
     """
@@ -96,12 +69,12 @@ def Draw_GridWorld(ax, maze_structure, maze_scaling):
     len_y = len(maze_structure)
     len_x = len(maze_structure[0])
 
-    # ax.hlines([-0.5 * maze_scaling], -1 * maze_scaling, len_x * maze_scaling, colors='b', linestyles='dashed')
-    # ax.vlines([-0.5 * maze_scaling], -1 * maze_scaling, len_y * maze_scaling, colors='b', linestyles='dashed')
-    # for i in range(len_y):
-    #     ax.hlines([(i + 0.5) * maze_scaling], -1 * maze_scaling, len_x * maze_scaling, colors='b', linestyles='dashed')
-    # for i in range(len_x):
-    #     ax.vlines([(i + 0.5) * maze_scaling], -1 * maze_scaling, len_y * maze_scaling, colors='b', linestyles='dashed')
+    ax.hlines([-0.5 * maze_scaling], -1 * maze_scaling, len_x * maze_scaling, colors='b', linestyles='dashed')
+    ax.vlines([-0.5 * maze_scaling], -1 * maze_scaling, len_y * maze_scaling, colors='b', linestyles='dashed')
+    for i in range(len_y):
+        ax.hlines([(i + 0.5) * maze_scaling], -1 * maze_scaling, len_x * maze_scaling, colors='b', linestyles='dashed')
+    for i in range(len_x):
+        ax.vlines([(i + 0.5) * maze_scaling], -1 * maze_scaling, len_y * maze_scaling, colors='b', linestyles='dashed')
 
     # Draw obstacles
     for j in range(len_y):

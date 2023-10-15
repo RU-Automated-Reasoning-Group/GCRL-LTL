@@ -15,15 +15,14 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
     import rlutil.torch.pytorch_util as ptu
 
     # Envs
-
-    import envs
-    from envs.env_utils import DiscretizedActionEnv
+    from algo import envs
+    from algo.envs.env_utils import DiscretizedActionEnv
 
     # Algo
-    from algo import buffer, variants, networks
-    from algo.algo import RRTStar_GCSL
-    from algo.Graph import Graph
-    from algo.v_function_core import value_policy
+    from algo.gcsl_utils import buffer, variants, networks
+    from algo.GCSL_Graph import GCSL_Graph
+    from algo.graph_utils import Graph
+    from algo.graph_utils.v_function_core import value_policy
     import pickle
     
     from spectrl.examples.rooms_envs import GRID_PARAMS_LIST, MAX_TIMESTEPS, START_ROOM, FINAL_ROOM
@@ -48,11 +47,8 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
 
     env, env_for_checking, policy, replay_buffer, gcsl_kwargs = variants.get_params(
         env, env_for_checking, env_params)
-    file_path = '/root/code/gcsl_ant/data/example/' + env_name + '/rrt_star/' + env_name + \
-        '_test10_finetune1e6(center)_redo2_SL/'
+    file_path = '/root/code/gcsl_ant/data/example/' + env_name + '/rrt_star/' + env_name + '_test10_finetune1e6(center)_redo2_SL/'
         # '_test10_finetune1e6(center)_SLcenterSG_3x256_batch512[1000and200]/'
-        
-
     policy_filename = file_path + 'policy.pkl'
 
     # load main policy trained by SL
@@ -63,18 +59,18 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
     valuepolicy = value_policy(env)
     valuepolicy_filename = file_path + 'value_policy.pkl'
     valuepolicy.load_policy(valuepolicy_filename)
-    tree_filename = file_path + 'RRT_star_tree.pkl'
-    with open(tree_filename, 'rb') as f:
-        RRT_star_tree = pickle.load(f)
+    graph_filename = file_path + 'graph.pkl'
+    with open(graph_filename, 'rb') as f:
+        graph = pickle.load(f)
 
-    RRT_star_tree.set_algo('Dijkstra')
+    graph.set_algo('Dijkstra')
     policy = policy.cuda()
 
-    algo = RRTStar_GCSL(
+    algo = GCSL_Graph(
         env_name,
         env,
         env_for_checking,
-        RRT_star_tree,
+        graph,
         policy,
         valuepolicy,
         replay_buffer,

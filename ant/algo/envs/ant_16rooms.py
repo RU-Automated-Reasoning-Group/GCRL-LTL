@@ -12,14 +12,13 @@ import dill as pickle
 import getopt
 import os
 import sys
-from dependencies.multiworld.core.serializable import Serializable
+# from dependencies.multiworld.core.serializable import Serializable
 from PIL import Image
 import torch
 import torch.nn as nn
-from algo.utils import Line, Box_obstacle
 import math
 import matplotlib.patches as patches
-from algo.utils import *
+from algo.graph_utils.utils import *
 
 
 class Ant16RoomsEnv(GoalEnv, Serializable):

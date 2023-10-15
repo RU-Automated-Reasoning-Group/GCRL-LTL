@@ -169,6 +169,7 @@ along with MuJoCo simulator version `mujoco200` from [MuJoCo release website](ht
 	For conda environment setting-up, please refer to [conda_environment.yml](.\ant\environment\conda_environment.yml) for all specific versions of packages.
 3. Python(pip)
 	For Python pip packages, please refer to [python_requirement.txt](.\ant\environment\python_requirement.txt) for all specific versions of packages.
+    Also, install packages used in "dependencies" folder with "pip -e ."
 
 
 ## Run

@@ -4,6 +4,7 @@ import sys
 import matplotlib.pyplot as plt
 import gym
 
+
 def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwargs):
 
     import gym
@@ -14,15 +15,14 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
     import rlutil.torch.pytorch_util as ptu
 
     # Envs
-
-    import envs
-    from envs.env_utils import DiscretizedActionEnv
+    from algo import envs
+    from algo.envs.env_utils import DiscretizedActionEnv
 
     # Algo
-    from algo import buffer, variants, networks
-    from algo.algo import RRTStar_GCSL
-    from algo.Graph import Graph
-    from algo.v_function_core import value_policy
+    from algo.gcsl_utils import buffer, variants, networks
+    from algo.GCSL_Graph import GCSL_Graph
+    from algo.graph_utils import Graph
+    from algo.graph_utils.v_function_core import value_policy
     import pickle
 
     ptu.set_gpu(gpu)
@@ -30,26 +30,36 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
         print('Not using GPU. Will be slow.')
 
     torch.manual_seed(seed)
-    torch.set_num_threads(8)
     np.random.seed(seed)
+    torch.set_num_threads(8)
 
     env = envs.create_env(env_name)
     env_for_checking = envs.create_env(env_name)
-    # env.print_maze_infos()
+    env.print_maze_infos()
     env_params = envs.get_env_params(env_name)
     print(env_params)
 
     env, env_for_checking, policy, replay_buffer, gcsl_kwargs = variants.get_params(env, env_for_checking, env_params)
-    # print(type(env))
-    # print(dir(env))
-    RRT_star_tree = Graph((0, 0), (0, 0), algo='Dijkstra')
+    graph = Graph((0, 0), (0, 0), algo='Dijkstra')
     valuepolicy = value_policy(env)
 
-    algo = RRTStar_GCSL(
+    filepath = '/root/code/gcsl_ant/data/example/' + env_name + '/rrt_star/' + env_name + \
+        '_test10/'
+    filename = filepath + 'value_policy.pkl'
+    # valuepolicy.load_policy(filename)
+
+    graph_filename = filepath + 'RRT_star_tree.pkl'
+    with open(graph_filename, 'rb') as f:
+        graph = pickle.load(f)
+
+    graph.set_algo('Dijkstra')
+    policy = policy.cuda()
+
+    algo = GCSL_Graph(
         env_name,
         env,
         env_for_checking,
-        RRT_star_tree,
+        graph,
         policy,
         valuepolicy,
         replay_buffer,
@@ -58,7 +68,7 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
 
     exp_prefix = 'example/%s/rrt_star/' % (env_name,)
     with log_utils.setup_logger(exp_prefix=exp_prefix, log_base_dir=output_dir):
-        algo.grow_RRT_star_tree_using_graph()
+        algo.finetune_value_Vpolicy()
 
 
 if __name__ == "__main__":
