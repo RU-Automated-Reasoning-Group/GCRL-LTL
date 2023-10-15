@@ -1,7 +1,7 @@
 from gym.envs.registration import register
 
 from envs.safety.zones_env import ZonesEnv
-from envs.task_envs import ZonePrimitiveEnv, ZoneRandomGoalEnv, ZoneRandomGoalContinualEnv
+from envs.task_envs import ZonePrimitiveEnv, ZoneRandomGoalEnv, ZoneRandomGoalTrajEnv
 
 
 ### Safety Envs
@@ -20,7 +20,6 @@ register(
 register(
     id='Zones-8-v1',
     entry_point='envs.safety.zones_env:ZonesEnv8Fixed')
-
 
 register(
     id='Zones-4-v0',

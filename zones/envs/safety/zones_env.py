@@ -150,7 +150,7 @@ class ZonesEnv(Engine):
 
         return offset
 
-    # NOTE: self..map_seed is only used for a fixed map during evaluation
+    # NOTE: self.map_seed is only used for a fixed map during evaluation
     # reset() will not affect the map at all. If we need a new map, create 
     # a new env from scratch with different seed
     def seed(self, seed=None):

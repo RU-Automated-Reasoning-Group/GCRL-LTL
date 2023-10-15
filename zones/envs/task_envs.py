@@ -1,10 +1,11 @@
 import os
-import random
-import torch
-import numpy as np
-import gym
-from stable_baselines3 import PPO
 from multiprocessing import current_process
+
+import numpy as np
+import torch
+import gym
+from gym.spaces import Box, Dict, Discrete, MultiBinary, MultiDiscrete
+from stable_baselines3 import PPO
 
 
 class ZonePrimitiveEnv(gym.Wrapper):
@@ -78,11 +79,11 @@ class ZoneRandomGoalEnv(gym.Wrapper):
         self.primitives = []
         for direction in ['pos_x', 'neg_x', 'pos_y', 'neg_y']:
             self.primitives.append(PPO.load(os.path.join(self.primitives_path, direction), device=device))
-        self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(100,), dtype=np.float32)
+        self.observation_space = Box(low=-np.inf, high=np.inf, shape=(100,), dtype=np.float32)
         if self.use_primitves:
-            self.action_space = gym.spaces.Discrete(len(self.primitives))
+            self.action_space = Discrete(len(self.primitives))
         else:
-            self.action_space = gym.spaces.Box(low=-1, high=1, shape=(2,), dtype=np.float32)
+            self.action_space = Box(low=-1, high=1, shape=(2,), dtype=np.float32)
         self.others_reward, self.success_reward = rewards[0], rewards[1]
         self.temperature = temperature
         self.max_timesteps = max_timesteps
@@ -161,7 +162,7 @@ class ZoneRandomGoalEnv(gym.Wrapper):
         return self.current_observation(), reward, done, info
 
 
-class ZoneRandomGoalContinualEnv(gym.Wrapper):
+class ZoneRandomGoalTrajEnv(gym.Wrapper):
 
     PRIMITVE_OBS_DIM = 12
     ZONE_OBS_DIM = 24
@@ -178,10 +179,8 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
         device=torch.device('cpu'), 
         max_timesteps=1000, 
         debug=False, 
-        reset_continual=False
     ):
         super().__init__(env)
-        self.start = 'ANYWHERE'
         self.goals = ['J', 'W', 'R', 'Y']
         self.goal_index = 0
         self.zones_representation = zones_representation
@@ -191,66 +190,74 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
         self.primitives = []
         for direction in ['pos_x', 'neg_x', 'pos_y', 'neg_y']:
             self.primitives.append(PPO.load(os.path.join(self.primitives_path, direction), device=device))
-        self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(100,), dtype=np.float32)
+        self.observation_space = Dict({
+            'obs': Box(low=-np.inf, high=np.inf, shape=(100,), dtype=np.float32),
+            'pid': Box(low=0, high=np.inf, shape=(1,), dtype=np.int),
+            'V_omega': Box(low=0, high=np.inf, shape=(4,), dtype=np.float32), # we don't need this
+        })
         if self.use_primitves:
-            self.action_space = gym.spaces.Discrete(len(self.primitives))
+            self.action_space = Discrete(len(self.primitives))
         else:
-            self.action_space = gym.spaces.Box(low=-1, high=1, shape=(2,), dtype=np.float32)
+            self.action_space = Box(low=-1, high=1, shape=(2,), dtype=np.float32)
         self.others_reward, self.success_reward = rewards[0], rewards[1]
         self.temperature = temperature
         self.max_timesteps = max_timesteps
         self.executed_timesteps = 0
-        self.reset_continual = reset_continual
-        self.continue_traj = False
-        self.continue_start = None
-        self.success = False
         self.debug = debug
 
     def is_alive(self):
         return self.executed_timesteps < self.max_timesteps
 
-    def current_observation(self):
+    def current_observation(self, compute_v=False):
         obs = self.env.obs()
         goal = self.zones_representation[self.current_goal()]
-        return np.concatenate((obs, goal))
+        current_obs = {
+            'obs': np.concatenate([obs, goal]),
+            'pid': np.array([self.current_pid()]),
+            'V_omega':  self.current_V_omega(obs=obs, compute_v=compute_v)
+        }
+        
+        return current_obs
+    
+    def current_V_omega(self, obs, compute_v=False):
+        V_omega = np.zeros(len(self.goals))
+        with torch.no_grad():
+            for idx, goal in enumerate(self.goals):
+                if compute_v:
+                    if goal != self.current_goal():
+                        # print(np.concatenate([obs, self.zones_representation[goal]]))
+                        # print(type(np.concatenate([obs, self.zones_representation[goal]])))
+                        # exit()
+                        V_omega[idx] = self.policy.predict_value(np.concatenate([obs, self.zones_representation[goal]])).item()
+                    else:
+                        V_omega[idx] = np.inf
+                else:
+                    V_omega[idx] = -np.inf
+        
+        return V_omega
 
-    def custom_observation(self, goal:str):
+    def custom_observation(self, goal:str, compute_v=False):
         obs = self.env.obs()
         goal = self.zones_representation[goal]
-        return np.concatenate((obs, goal))
+        current_obs = {
+            'obs': np.concatenate([obs, goal]),
+            'pid': self.current_pid(),
+            'V_omega':  self.current_V_omega(obs=obs, compute_v=compute_v)
+        }
+        return current_obs
 
     def reset(self):
+        super().reset()
         self.executed_timesteps = 0
-        self.success = False
-        if self.reset_continual and self.continue_traj:
-            self.continue_traj = False
-            self.start = self.continue_start
-            while True:
-                goal = random.choice(self.goals)
-                if goal != self.start:
-                    break
-            self.goal_index = self.goals.index(goal)
-            obs = self.env.obs()
-        else:
-            self.continue_traj = False
-            self.continue_start = None
-            self.start = 'ANYWHERE'
-            self.goal_index = (self.goal_index + 1) % len(self.goals)
-            obs = super().reset()
+        self.goal_index = (self.goal_index + 1) % len(self.goals)
 
-        goal_vector = self.zones_representation[self.current_goal()]
-        return np.concatenate((obs, goal_vector))
-
-    def current_start(self):
-        return self.start
+        return self.current_observation()
 
     def current_goal(self):
         return self.goals[self.goal_index]
 
-    def current_env_index(self):
-        p = current_process()
-        print(p._identity[0])
-        return p._identity[0]
+    def current_pid(self):
+        return current_process()._identity[0]
 
     def _translate_primitive(self, action):
         ob = self.env.obs()
@@ -295,16 +302,4 @@ class ZoneRandomGoalContinualEnv(gym.Wrapper):
                 done = env_done
                 info = {'zone': truth_assignment, 'task': self.current_goal()}
 
-        if self.reset_continual and success and random.random() > 0.9 and not self.continue_traj:
-            self.continue_traj = True
-            self.continue_start = self.current_goal()
-            # required before reset()
-            self.env.done = False
-            self.env.steps = 0
-        else:
-            self.continue_traj = False
-            self.continue_start = None
-        
-        self.success = success
-
-        return self.current_observation(), reward, done, info
+        return self.current_observation(compute_v=success), reward, done, info

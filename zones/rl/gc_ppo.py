@@ -1,19 +1,21 @@
-from typing import Optional, Type, List, Dict, Union, Tuple, Any
+import time
+from typing import Optional, Type, List, Dict, Any, Tuple
 
 import numpy as np
 import torch as th
 import torch.nn as nn
 import gym
-from gym import spaces
-from torch.nn import functional as F
 
 from stable_baselines3 import PPO
 from stable_baselines3.common.policies import BasePolicy, ActorCriticPolicy
-from stable_baselines3.common.buffers import DictRolloutBuffer, RolloutBuffer
+from stable_baselines3.common.buffers import RolloutBuffer
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.vec_env import VecEnv
-from stable_baselines3.common.utils import explained_variance, get_schedule_fn, obs_as_tensor, is_vectorized_observation
+from stable_baselines3.common.utils import obs_as_tensor, safe_mean
 from stable_baselines3.common.torch_layers import create_mlp
+from stable_baselines3.common.type_aliases import GymEnv, MaybeCallback, Schedule
+
+from rl.traj_buffer import TrajectoryBuffer
 
 
 class GCVNetwork(BasePolicy):
@@ -87,13 +89,7 @@ class GCPPO(PPO):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-        # NOTE: train gcvf off-line
-        #self.gcvf = self.make_gcvf()
-        #self.gcvf_optimizer = th.optim.Adam(self.gcvf.parameters(), lr=kwargs['learning_rate'])
-
-        # NOTE: under construction
-        self.traj_buffer = None
+        self.env.policy = self.policy
         
     def make_gcvf(self) -> GCVNetwork:
         self.full_observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(124,), dtype=np.float32)
@@ -182,12 +178,63 @@ class GCPPO(PPO):
 
         rollout_buffer.compute_returns_and_advantage(last_values=values, dones=dones)
 
+        print(rollout_buffer.observations)
+        exit()
+
         callback.on_rollout_end()
 
         return True
 
+    def learn(
+        self,
+        total_timesteps: int,
+        callback: MaybeCallback = None,
+        log_interval: int = 1,
+        eval_env: Optional[GymEnv] = None,
+        eval_freq: int = -1,
+        n_eval_episodes: int = 5,
+        tb_log_name: str = 'GCPPO',
+        eval_log_path: Optional[str] = None,
+        reset_num_timesteps: bool = True,
+    ) -> 'GCPPO':
+        iteration = 0
+
+        total_timesteps, callback = self._setup_learn(
+            total_timesteps, eval_env, callback, eval_freq, n_eval_episodes, eval_log_path, reset_num_timesteps, tb_log_name
+        )
+
+        callback.on_training_start(locals(), globals())
+
+        while self.num_timesteps < total_timesteps:
+
+            continue_training = self.collect_rollouts(self.env, callback, self.rollout_buffer, n_rollout_steps=self.n_steps)
+
+            if continue_training is False:
+                break
+
+            iteration += 1
+            self._update_current_progress_remaining(self.num_timesteps, total_timesteps)
+
+            # Display training infos
+            if log_interval is not None and iteration % log_interval == 0:
+                fps = int(self.num_timesteps / (time.time() - self.start_time))
+                self.logger.record("time/iterations", iteration, exclude="tensorboard")
+                if len(self.ep_info_buffer) > 0 and len(self.ep_info_buffer[0]) > 0:
+                    self.logger.record("rollout/ep_rew_mean", safe_mean([ep_info["r"] for ep_info in self.ep_info_buffer]))
+                    self.logger.record("rollout/ep_len_mean", safe_mean([ep_info["l"] for ep_info in self.ep_info_buffer]))
+                self.logger.record("time/fps", fps)
+                self.logger.record("time/time_elapsed", int(time.time() - self.start_time), exclude="tensorboard")
+                self.logger.record("time/total_timesteps", self.num_timesteps, exclude="tensorboard")
+                self.logger.dump(step=self.num_timesteps)
+
+            self.train()
+
+        callback.on_training_end()
+
+        return self
+
     def save_policy(self, path: str) -> ActorCriticPolicy:
         self.policy.save(path)
 
-    def save(self, **kwargs) -> None:
-        raise NotImplementedError
+    # def save(self, path: str) -> None:
+    #     raise NotImplementedError
