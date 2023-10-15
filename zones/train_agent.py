@@ -13,7 +13,7 @@ from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 
 from rl.gc_ppo import GCPPO
 from rl.traj_buffer import TrajectoryBuffer
-from rl.callbacks import CollectTrajectoryCallback, SimpleEvalCallback, PolicyCheckpointCallback
+from rl.callbacks import CollectTrajectoryCallback
 from envs import ZonesEnv, ZoneRandomGoalTrajEnv
 from envs.utils import get_zone_vector
 
@@ -101,7 +101,6 @@ def main(args):
     eval_env = make_vec_env(eval_env_fn)
     eval_callback = EvalCallback(
         eval_env=eval_env,
-        # NOTE: saving PPO directly is not available
         best_model_save_path=eval_log_path,
         log_path=eval_log_path,
         eval_freq=100000/num_cpus,
@@ -109,18 +108,11 @@ def main(args):
         deterministic=True,
     )
     
-    #traj_buffer = TrajectoryBuffer(buffer_size=10000, device=device)
-    #traj_callback = CollectTrajectoryCallback(traj_buffer=traj_buffer)
+    traj_buffer = TrajectoryBuffer(traj_length=1000, buffer_size=total_timesteps, obs_dim=100, n_envs=num_cpus)
+    traj_callback = CollectTrajectoryCallback(traj_buffer=traj_buffer)
 
-    policy_checkpoint_callback = PolicyCheckpointCallback(
-        save_freq=100000/num_cpus,
-        save_path='logs/ppo_checkpoint/{}/'.format(exp_name),
-        name_prefix='gc_ppo',
-    )
-
-    #callback = CallbackList([eval_callback, traj_callback, policy_checkpoint_callback])
-    callback = CallbackList([eval_callback])
-
+    callback = CallbackList([eval_callback, traj_callback])
+    
     model.learn(total_timesteps=total_timesteps, callback=callback)
 
 

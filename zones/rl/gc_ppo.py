@@ -15,8 +15,6 @@ from stable_baselines3.common.utils import obs_as_tensor, safe_mean
 from stable_baselines3.common.torch_layers import create_mlp
 from stable_baselines3.common.type_aliases import GymEnv, MaybeCallback, Schedule
 
-from rl.traj_buffer import TrajectoryBuffer
-
 
 class GCVNetwork(BasePolicy):
     """
@@ -89,19 +87,6 @@ class GCPPO(PPO):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.env.policy = self.policy
-        
-    def make_gcvf(self) -> GCVNetwork:
-        self.full_observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(124,), dtype=np.float32)
-        # Make sure we always have separate networks for features extractors etc
-        net_args = dict(
-            observation_space=self.observation_space,
-            action_space=self.action_space,
-            features_extractor=self.policy.features_extractor,
-            features_dim=self.full_observation_space.shape[0],
-            net_arch=[512, 1024, 256],
-        )
-        return GCVNetwork(**net_args).to(self.device)
 
     def collect_rollouts(
         self,
@@ -178,9 +163,6 @@ class GCPPO(PPO):
 
         rollout_buffer.compute_returns_and_advantage(last_values=values, dones=dones)
 
-        print(rollout_buffer.observations)
-        exit()
-
         callback.on_rollout_end()
 
         return True
@@ -233,8 +215,5 @@ class GCPPO(PPO):
 
         return self
 
-    def save_policy(self, path: str) -> ActorCriticPolicy:
-        self.policy.save(path)
-
-    # def save(self, path: str) -> None:
-    #     raise NotImplementedError
+    def save(self, path: str) -> PPO:
+        return super().save(path)
