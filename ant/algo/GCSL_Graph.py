@@ -28,13 +28,12 @@ class GCSL_Graph:
     def __init__(self,
                  env_name,
                  env,
-                 env_for_checking,
                  graph,
                  policy,
                  value_policy,
                  replay_buffer,
                  validation_buffer,
-                 rrt_tree_node_cover_size=1,
+                 graph_node_cover_size=1,
                  max_timesteps=1e6,
                  max_path_length=50,
                  # Exploration Strategy
@@ -56,7 +55,6 @@ class GCSL_Graph:
                  ):
         self.env_name = env_name
         self.env = env
-        self.env_for_checking = env_for_checking
         self.graph = graph
 
         self.policy = policy
@@ -64,7 +62,7 @@ class GCSL_Graph:
         self.replay_buffer = replay_buffer
         self.validation_buffer = validation_buffer
 
-        self.rrt_tree_node_cover_size = rrt_tree_node_cover_size
+        self.graph_node_cover_size = graph_node_cover_size
 
         self.is_discrete_action = hasattr(self.env.action_space, 'n')
 
@@ -396,7 +394,7 @@ class GCSL_Graph:
 
                 # Interact in environmenta according to exploration strategy.
                 states, _, goal_state, _, opt_path, dataset, penalty = self.sample_trajectory()
-                loss = self.value_policy.execute(dataset, penalty, self.rrt_tree_node_cover_size)
+                loss = self.value_policy.execute(dataset, penalty, self.graph_node_cover_size)
                 
                 sample_goals_x.append(goal_state[0])
                 sample_goals_y.append(goal_state[1])
@@ -421,10 +419,8 @@ class GCSL_Graph:
                     last_time = time.time()
                     logger.dump_tabular()
                     ranger.reset()
-                    self.save_rrt_star_tree(
-                        total_timesteps, sample_goals_x, sample_goals_y, 10, opt_path)
-        self.save_rrt_star_tree(
-            total_timesteps, sample_goals_x, sample_goals_y, 1, opt_path, states)
+                    self.save_graph(total_timesteps, sample_goals_x, sample_goals_y, 10, opt_path)
+        self.save_graph(total_timesteps, sample_goals_x, sample_goals_y, 1, opt_path, states)
         self.save_loss_fig("value_policy_loss", fig_loss_x, fig_loss_y)
         self.env.sample_goal_scatter_fig(sample_goals_x, sample_goals_y)
     
@@ -455,8 +451,7 @@ class GCSL_Graph:
             while total_timesteps < int(self.max_timesteps):
                 # Interact in environmenta according to exploration strategy.
                 states, _, goal_state, _, opt_path, dataset, penalty = self.sample_trajectory(finetune=True)
-                loss = self.value_policy.execute(
-                    dataset, penalty, self.rrt_tree_node_cover_size)
+                loss = self.value_policy.execute(dataset, penalty, self.graph_node_cover_size)
 
                 fig_loss_x.append(total_timesteps/self.max_path_length)
                 fig_loss_y.append(loss.detach().numpy())
@@ -486,8 +481,7 @@ class GCSL_Graph:
                     last_time = time.time()
                     logger.dump_tabular()
                     ranger.reset()
-                    self.save_rrt_star_tree(
-                        total_timesteps, sample_goals_x, sample_goals_y, 10, opt_path, states)
+                    self.save_graph(total_timesteps, sample_goals_x, sample_goals_y, 10, opt_path, states)
 
             self.save_loss_fig("value_policy_loss", fig_loss_x, fig_loss_y)
 
@@ -576,6 +570,91 @@ class GCSL_Graph:
 
         self.save_loss_fig("SL_graph", fig_loss_x, fig_loss_y,validation_loss=fig_validation_loss_y)
 
+    def visualize_evaluate_policy_with_LTL_buchi(self, goals, avoids, eval_episodes, greedy=True, prefix='Eval', total_timesteps=0, env_type="none", spec_num=""):
+        env = self.env
+
+        all_states = []
+        all_goal_states = []
+        all_actions = []
+        all_reschedule_points = []
+        final_dist_vec = np.zeros(eval_episodes)
+        success_vec = np.zeros(eval_episodes)
+
+        with open("./code/gcsl_ant/DebugLog.txt", "a") as f:
+            f.write(env.maze_env._maze_id+'\n')
+        f.close()
+        avg_length = 0
+        max_length = 0
+        succeeded_count = 0
+        for index in tqdm.trange(eval_episodes, leave=True):
+
+            states, actions, goal_state, trajectory_len = self.sample_trajectory_for_evaluation_with_LTL_buchi(
+                goals, avoids, noise=0, greedy=greedy, goal_env=env_type)
+            reschedule_points = []
+
+            assert len(states) == len(actions)
+            all_actions.extend(actions)
+            all_states.append(states)
+            all_goal_states.append(goal_state)
+            all_reschedule_points.append(reschedule_points)
+
+            final_dist = env.goal_distance(
+                states[trajectory_len-1], goal_state)
+
+            final_dist_vec[index] = final_dist
+
+            # with open("./code/gcsl_ant/DebugLog.txt", "a") as f:
+            #     f.write(str(trajectory_len)+"\n")
+            #     dist = 0
+            #     for i in range(trajectory_len):
+            #         if i >= 1:
+            #             dist += distance(states[i][:2], states[i-1][:2])
+            #     dist = dist/trajectory_len
+            #     f.write('avgdist:'+str(dist)+'\n')
+            # f.close()
+            success_vec[index] = (final_dist < self.goal_threshold)
+            if success_vec[index] == True:
+                avg_length += trajectory_len
+                succeeded_count += 1
+                if trajectory_len > max_length:
+                    max_length = trajectory_len
+            with open("./code/gcsl_ant/TraceData"+env_type+".txt", "a") as f:
+                f.write(str([[list(state[:2])
+                        for state in states], list(goal_state[:2]), success_vec[-1], trajectory_len])+"\n")
+            f.close()
+
+        with open("./code/gcsl_ant/DebugLog.txt", "a") as f:
+            if succeeded_count != 0:
+                f.write("Avg trace length till succeed:" +
+                        str(avg_length / succeeded_count) + "\n")
+            else:
+                f.write("Avg trace length till succeed:" + str(0) + "\n")
+            f.write("Max trace length till succeed:" + str(max_length) + "\n")
+            f.write('/success ratio'+str(np.mean(success_vec)))
+            f.write('avg final dist' + str(np.mean(final_dist_vec)))
+        f.close()
+
+        print('%s/success ratio' % prefix,  np.mean(success_vec))
+        print('%s avg final dist' % prefix,  np.mean(final_dist_vec))
+        all_states = np.stack(all_states)
+        all_goal_states = np.stack(all_goal_states)
+
+        logger.record_tabular('%s num episodes' % prefix, eval_episodes)
+        logger.record_tabular('%s avg final dist' %
+                              prefix,  np.mean(final_dist_vec))
+        logger.record_tabular('%s success ratio' %
+                              prefix, np.mean(success_vec))
+        if self.summary_writer:
+            self.summary_writer.add_scalar(
+                '%s/avg final dist' % prefix, np.mean(final_dist_vec), total_timesteps)
+            self.summary_writer.add_scalar(
+                '%s/success ratio' % prefix,  np.mean(success_vec), total_timesteps)
+
+        # comment out to save time
+        diagnostics = env.get_diagnostics(
+            all_states, all_goal_states, success_vec, spec_num)
+
+        return all_states, all_goal_states
 
     def sample_trajectory(self, finetune=False):
 
@@ -789,6 +868,70 @@ class GCSL_Graph:
         assert trajectory_length == self.max_path_length
 
         return np.stack(states), np.array(actions), goal_state, trajectory_length, opt_path, done
+    
+    def sample_trajectory_for_evaluation_with_LTL_buchi(self, goals, avoids, greedy=True, noise=0, render=False, goal_env="none"):
+
+        subgoals = deque()
+        for goal in goals:
+            subgoals.append(goal)
+        max_trajectory_len = len(subgoals)*self.max_path_length
+
+        # keep tracking of trajectory
+        states_of_alltasks = []
+        actions_of_alltasks = []
+
+        goal_state = self.env.sample_goal()
+        state = self.env.reset()
+
+        while len(subgoals) != 0:
+            sub_goal = subgoals.popleft()
+            goal_state[:2] = sub_goal(np.array([0, 0]))[1]
+            done = False
+            states = []
+            actions = []
+            for t in range(self.max_path_length):
+                if done == True:
+                    break
+                # get observation
+                observation = self.env.observation(state)
+
+                horizon = np.arange(self.max_path_length) >= (
+                    self.max_path_length - 1 - t)  # Temperature encoding of horizon
+                action = self.policy.act_vectorized(
+                    observation[None], goal_state[:2][None], horizon=horizon[None], greedy=greedy, noise=noise)[0]
+                if not self.is_discrete_action:
+                    action = np.clip(
+                        action, self.env.action_space.low, self.env.action_space.high)
+
+                actions.append(action)
+                # execute action on current state
+                state, _, _, _ = self.env.step(action)
+                states.append(state)
+
+                # if done == False:
+                #     done = True if np.linalg.norm(
+                #         (state[:2] - sub_goal), axis=-1) < self.goal_threshold else False
+                done = sub_goal(state[:2])[0]
+
+            states_of_alltasks += states
+            actions_of_alltasks += actions
+            # current subtask isn't solved
+            if done == False:
+                break
+
+        trajectory_length = len(states_of_alltasks)
+
+        # pad the states and actions to be the same size (max_path_length * state.shape/action.shape)
+        if trajectory_length < max_trajectory_len:
+            pad_len = max_trajectory_len - trajectory_length
+            pad_state = states_of_alltasks[-1]
+            pad_action = 0
+            for i in range(pad_len):
+                states_of_alltasks.append(pad_state)
+                actions_of_alltasks.append(pad_action)
+
+        return np.stack(states_of_alltasks), np.array(actions_of_alltasks), goal_state, trajectory_length
+
 
     def assign_highlevel_action(self, current_node, next_node):
         diff = np.subtract(np.array(next_node), np.array(current_node))
@@ -863,16 +1006,16 @@ class GCSL_Graph:
 
         return torch.mean(nll * weights_torch)
     
-    def save_rrt_star_tree(self, timestep, goal_pos_x, goal_pos_y, goal_scatter_num, opt_path=[], states=[], count=-1):
+    def save_graph(self, timestep, goal_pos_x, goal_pos_y, goal_scatter_num, opt_path=[], states=[], count=-1):
         '''
-        1. object of rrt tree
+        1. object of graph
         2. Plot RRT, obstacles and shortest path
         '''
 
-        with open(osp.join(logger.get_snapshot_dir(), 'RRT_star_tree.pkl'), 'wb') as f:
+        with open(osp.join(logger.get_snapshot_dir(), 'graph.pkl'), 'wb') as f:
             pickle.dump(self.graph, f)
 
-        self.env.save_rrt_star_tree(timestep, goal_pos_x, goal_pos_y, goal_scatter_num,
+        self.env.save_graph(timestep, goal_pos_x, goal_pos_y, goal_scatter_num,
                                     self.graph, opt_path=opt_path, states=states, count=count)
 
     def save_loss_fig(self, name, x, loss, validation_loss=None):
@@ -888,5 +1031,5 @@ class GCSL_Graph:
         plt.savefig("./code/gcsl_ant/fig/" + str(name) + "_loss.pdf")
 
     def get_node_by_state(self, state):
-        return (((state[0] + 0.5 * self.rrt_tree_node_cover_size) // self.rrt_tree_node_cover_size)*self.rrt_tree_node_cover_size,
-                ((state[1] + 0.5 * self.rrt_tree_node_cover_size) // self.rrt_tree_node_cover_size)*self.rrt_tree_node_cover_size)
+        return (((state[0] + 0.5 * self.graph_node_cover_size) // self.graph_node_cover_size)*self.graph_node_cover_size,
+                ((state[1] + 0.5 * self.graph_node_cover_size) // self.graph_node_cover_size)*self.graph_node_cover_size)

@@ -21,7 +21,7 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
     # Algo
     from algo.gcsl_utils import buffer, variants, networks
     from algo.GCSL_Graph import GCSL_Graph
-    from algo.graph_utils import Graph
+    from algo.graph_utils.graph import Graph
     from algo.graph_utils.v_function_core import value_policy
     import pickle
 
@@ -39,7 +39,7 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
     env_params = envs.get_env_params(env_name)
     print(env_params)
 
-    env, env_for_checking, policy, replay_buffer, gcsl_kwargs = variants.get_params(env, env_for_checking, env_params)
+    env, policy, replay_buffer, gcsl_kwargs = variants.get_params(env, env_params)
     graph = Graph((0, 0), (0, 0), algo='Dijkstra')
     valuepolicy = value_policy(env)
 
@@ -48,7 +48,7 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
     filename = filepath + 'value_policy.pkl'
     # valuepolicy.load_policy(filename)
 
-    graph_filename = filepath + 'RRT_star_tree.pkl'
+    graph_filename = filepath + 'graph.pkl'
     with open(graph_filename, 'rb') as f:
         graph = pickle.load(f)
 
@@ -58,7 +58,6 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
     algo = GCSL_Graph(
         env_name,
         env,
-        env_for_checking,
         graph,
         policy,
         valuepolicy,

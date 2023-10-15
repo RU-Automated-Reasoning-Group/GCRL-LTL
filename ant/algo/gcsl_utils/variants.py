@@ -8,9 +8,8 @@ Main function defined up top. Helpers below.
 """
 
 
-def get_params(env, env_for_checking, env_params, buffer_size=20000):
+def get_params(env, env_params, buffer_size=20000):
     env = discretize_environment(env, env_params)
-    env_for_checking = discretize_environment(env_for_checking, env_params)
     policy = default_markov_policy(env, env_params)
     buffer_kwargs = dict(
         env=env,
@@ -20,7 +19,7 @@ def get_params(env, env_for_checking, env_params, buffer_size=20000):
     replay_buffer = buffer.ReplayBuffer(**buffer_kwargs)
     gcsl_kwargs = default_gcsl_params(env, env_params)
     gcsl_kwargs['validation_buffer'] = buffer.ReplayBuffer(**buffer_kwargs)
-    return env, env_for_checking, policy, replay_buffer, gcsl_kwargs
+    return env, policy, replay_buffer, gcsl_kwargs
 
 
 def get_horizon(env_params):

@@ -21,7 +21,7 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
     # Algo
     from algo.gcsl_utils import buffer, variants, networks
     from algo.GCSL_Graph import GCSL_Graph
-    from algo.graph_utils import Graph
+    from algo.graph_utils.graph import Graph
     from algo.graph_utils.v_function_core import value_policy
     import pickle
     
@@ -41,12 +41,11 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
     # get ant env
     env = envs.create_env(env_name)
     env.print_maze_infos()
-    env_for_checking = envs.create_env(env_name)
     env_params = envs.get_env_params(env_name)
     print(env_params)
 
-    env, env_for_checking, policy, replay_buffer, gcsl_kwargs = variants.get_params(
-        env, env_for_checking, env_params)
+    env, policy, replay_buffer, gcsl_kwargs = variants.get_params(
+        env, env_params)
     file_path = '/root/code/gcsl_ant/data/example/' + env_name + '/rrt_star/' + env_name + '_test10_finetune1e6(center)_redo2_SL/'
         # '_test10_finetune1e6(center)_SLcenterSG_3x256_batch512[1000and200]/'
     policy_filename = file_path + 'policy.pkl'
@@ -69,7 +68,6 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
     algo = GCSL_Graph(
         env_name,
         env,
-        env_for_checking,
         graph,
         policy,
         valuepolicy,
