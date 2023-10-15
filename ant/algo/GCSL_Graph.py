@@ -276,7 +276,6 @@ class GCSL_Graph:
                 break
 
             for to_node in neighbors[curNode]:
-
                 cur_state = [
                     x * self.env.room_scaling for x in target_map[curNode]]
                 to_state = [
