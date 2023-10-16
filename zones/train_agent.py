@@ -115,6 +115,9 @@ def main(args):
     
     model.learn(total_timesteps=total_timesteps, callback=callback)
 
+    traj_dataset = traj_buffer.build_dataset(model.policy)
+    torch.save(traj_dataset, './datasets/traj_dataset.pt')
+
 
 if __name__ == '__main__':
 
