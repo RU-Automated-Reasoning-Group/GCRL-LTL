@@ -1,10 +1,14 @@
 ### command line to run experiments
 
-export PYTHONPATH="${PYTHONPATH}:/root/code/gcsl_ant"
+export PYTHONPATH="${PYTHONPATH}:/root/code/gcsl_pseudo_algo/ant"
 
-python RRT_star/Generate_graph.py ant16rooms
-python RRT_star/Finetune_Vpolicy.py ant16rooms
-python RRT_star/SupervisedLearning.py ant16rooms 1000 500
-python RRT_star/TestLTLspecs_Buchi.py ant16rooms 10
+require installment of ltl2ba
 
-nohup python RRT_star/Generate_graph.py ant16rooms > training.log &
+export PATH=$PATH:/root/code/gcsl_pseudo_algo/ant/ltl2ba-1.2b1
+
+python experiments/Generate_graph.py ant16rooms
+python experiments/Finetune_Vpolicy.py ant16rooms
+python experiments/SupervisedLearning.py ant16rooms 1000 500
+python experiments/TestLTLspecs_Buchi.py ant16rooms 10
+
+nohup python experiments/Generate_graph.py ant16rooms > training.log &
