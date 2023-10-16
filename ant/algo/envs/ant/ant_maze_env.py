@@ -14,8 +14,8 @@
 # ==============================================================================
 
 
-from envs.ant.maze_env import MazeEnv
-from envs.ant.ant import AntEnv
+from algo.envs.ant.maze_env import MazeEnv
+from algo.envs.ant.ant import AntEnv
 
 class AntMazeEnv(MazeEnv):
     MODEL_CLASS = AntEnv

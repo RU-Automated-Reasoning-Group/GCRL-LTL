@@ -2,7 +2,7 @@ from types import SimpleNamespace
 from collections import OrderedDict
 import numpy as np
 
-from gcsl_with_graph.buchi.ltl import gltl2ba,PathGraph
+from algo.buchi.ltl import gltl2ba,PathGraph
 # from ltl import gltl2ba, PathGraph
 
 INF = 999

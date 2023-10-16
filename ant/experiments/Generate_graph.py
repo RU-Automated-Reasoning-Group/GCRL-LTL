@@ -52,7 +52,7 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
         **gcsl_kwargs
     )
 
-    exp_prefix = 'example/%s/rrt_star/' % (env_name,)
+    exp_prefix = 'example/%s/' % (env_name,)
     with log_utils.setup_logger(exp_prefix=exp_prefix, log_base_dir=output_dir):
         algo.generate_graph()
 

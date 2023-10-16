@@ -8,11 +8,8 @@ import math
 import time
 import tqdm
 import os.path as osp
-import copy
 import pickle
 import matplotlib.pyplot as plt
-from envs.env_utils import DiscretizedActionEnv
-import warnings
 
 from algo.graph_utils.utils import *
 from algo.graph_utils.v_function_core import *
@@ -162,9 +159,6 @@ class GCSL_Graph:
         final_dist_vec = np.zeros(eval_episodes)
         success_vec = np.zeros(eval_episodes)
 
-        avg_length = 0
-        max_length = 0
-        succeeded_count = 0
         for index in tqdm.trange(eval_episodes, leave=True):
             states, actions, goal_state, trajectory_len = self.sample_trajectory_for_evaluation(noise=0, greedy=greedy)
             assert len(states) == len(actions)
@@ -580,9 +574,6 @@ class GCSL_Graph:
         final_dist_vec = np.zeros(eval_episodes)
         success_vec = np.zeros(eval_episodes)
 
-        with open("./code/gcsl_ant/DebugLog.txt", "a") as f:
-            f.write(env.maze_env._maze_id+'\n')
-        f.close()
         avg_length = 0
         max_length = 0
         succeeded_count = 0
@@ -602,37 +593,12 @@ class GCSL_Graph:
                 states[trajectory_len-1], goal_state)
 
             final_dist_vec[index] = final_dist
-
-            # with open("./code/gcsl_ant/DebugLog.txt", "a") as f:
-            #     f.write(str(trajectory_len)+"\n")
-            #     dist = 0
-            #     for i in range(trajectory_len):
-            #         if i >= 1:
-            #             dist += distance(states[i][:2], states[i-1][:2])
-            #     dist = dist/trajectory_len
-            #     f.write('avgdist:'+str(dist)+'\n')
-            # f.close()
             success_vec[index] = (final_dist < self.goal_threshold)
             if success_vec[index] == True:
                 avg_length += trajectory_len
                 succeeded_count += 1
                 if trajectory_len > max_length:
                     max_length = trajectory_len
-            with open("./code/gcsl_ant/TraceData"+env_type+".txt", "a") as f:
-                f.write(str([[list(state[:2])
-                        for state in states], list(goal_state[:2]), success_vec[-1], trajectory_len])+"\n")
-            f.close()
-
-        with open("./code/gcsl_ant/DebugLog.txt", "a") as f:
-            if succeeded_count != 0:
-                f.write("Avg trace length till succeed:" +
-                        str(avg_length / succeeded_count) + "\n")
-            else:
-                f.write("Avg trace length till succeed:" + str(0) + "\n")
-            f.write("Max trace length till succeed:" + str(max_length) + "\n")
-            f.write('/success ratio'+str(np.mean(success_vec)))
-            f.write('avg final dist' + str(np.mean(final_dist_vec)))
-        f.close()
 
         print('%s/success ratio' % prefix,  np.mean(success_vec))
         print('%s avg final dist' % prefix,  np.mean(final_dist_vec))
@@ -1028,7 +994,8 @@ class GCSL_Graph:
             validation_loss_line.set_label("validation_loss")
         ax.legend()
         ax.axis('on')
-        plt.savefig("./code/gcsl_ant/fig/" + str(name) + "_loss.pdf")
+        gcsl_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+        plt.savefig(gcsl_dir + "/ant/fig/" + str(name) + "_loss.pdf")
 
     def get_node_by_state(self, state):
         return (((state[0] + 0.5 * self.graph_node_cover_size) // self.graph_node_cover_size)*self.graph_node_cover_size,

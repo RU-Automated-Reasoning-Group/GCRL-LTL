@@ -1,1 +1,1 @@
-from gcsl_with_graph.buchi.scc import path_finding
+from algo.buchi.scc import path_finding

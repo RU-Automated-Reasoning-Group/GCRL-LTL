@@ -35,14 +35,13 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, samples
     np.random.seed(seed)
 
     env = envs.create_env(env_name)
-    env.print_maze_infos()
     env_params = envs.get_env_params(env_name)
     print(env_params)
 
     env, policy, replay_buffer, gcsl_kwargs = variants.get_params(env, env_params)
     valuepolicy = value_policy(env)
-    filepath = '/root/code/gcsl_ant/data/example/' + env_name + '/rrt_star/' + env_name + '_test10_finetune1e6(center)_redo3/'
 
+    filepath = '/root/code/gcsl_pseudo_algo/ant/data/example/' + env_name +  '/ant16rooms_test10_finetune1e6(center)_redo2_SL/'
     filename = filepath + 'value_policy.pkl'
     valuepolicy.load_policy(filename)
 
@@ -63,7 +62,7 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, samples
         **gcsl_kwargs
     )
 
-    exp_prefix = 'example/%s/rrt_star/' % (env_name,)
+    exp_prefix = 'example/%s/' % (env_name,)
     with log_utils.setup_logger(exp_prefix=exp_prefix, log_base_dir=output_dir):
         algo.supervised_learning(samples_num, training_time)
 

@@ -56,7 +56,7 @@ def default_markov_policy(env, env_params):
 def default_gcsl_params(env, env_params):
     return dict(
         # node square size
-        rrt_tree_node_cover_size=env_params.get('rrt_tree_node_cover_size', 1),
+        graph_node_cover_size=env_params.get('graph_node_cover_size', 1),
 
         max_path_length=env_params.get('max_trajectory_length', 50),
         goal_threshold=env_params.get('goal_threshold', 0.05),

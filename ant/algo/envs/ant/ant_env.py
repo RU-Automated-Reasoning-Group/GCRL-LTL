@@ -2,7 +2,7 @@ import os
 import gym
 import numpy as np
 
-from envs.ant.ant_maze_env import AntMazeEnv
+from algo.envs.ant.ant_maze_env import AntMazeEnv
 
 
 class AntFall(gym.Env):

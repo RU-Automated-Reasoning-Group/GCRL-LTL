@@ -24,7 +24,7 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
     from algo.graph_utils.graph import Graph
     from algo.graph_utils.v_function_core import value_policy
     import pickle
-
+    import os
     ptu.set_gpu(gpu)
     if not gpu:
         print('Not using GPU. Will be slow.')
@@ -34,8 +34,6 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
     torch.set_num_threads(8)
 
     env = envs.create_env(env_name)
-    env_for_checking = envs.create_env(env_name)
-    env.print_maze_infos()
     env_params = envs.get_env_params(env_name)
     print(env_params)
 
@@ -43,8 +41,7 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
     graph = Graph((0, 0), (0, 0), algo='Dijkstra')
     valuepolicy = value_policy(env)
 
-    filepath = '/root/code/gcsl_ant/data/example/' + env_name + '/rrt_star/' + env_name + \
-        '_test10/'
+    filepath = '/root/code/gcsl_pseudo_algo/ant/data/example/' + env_name + '/ant16rooms_test10_finetune1e6(center)_redo2_SL/'
     filename = filepath + 'value_policy.pkl'
     # valuepolicy.load_policy(filename)
 
@@ -65,7 +62,7 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
         **gcsl_kwargs
     )
 
-    exp_prefix = 'example/%s/rrt_star/' % (env_name,)
+    exp_prefix = 'example/%s/' % (env_name,)
     with log_utils.setup_logger(exp_prefix=exp_prefix, log_base_dir=output_dir):
         algo.finetune_value_Vpolicy()
 
@@ -73,7 +70,6 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
 if __name__ == "__main__":
     assert len(sys.argv) == 2
     env_name = str(sys.argv[1])
-    # assert env_name in ['antumaze', 'antfall', 'antpush', 'antfourrooms']
     params = {
         'seed': [0],
         'env_name': [env_name],

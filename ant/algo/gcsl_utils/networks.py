@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import rlutil.torch.pytorch_util as ptu
 from torch.nn.parameter import Parameter
 
-from algo import policy
+from algo.gcsl_utils import policy
 
 
 class Flatten(nn.Module):

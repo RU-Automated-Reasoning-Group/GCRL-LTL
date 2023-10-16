@@ -4,7 +4,7 @@ import sys
 import matplotlib.pyplot as plt
 import gym
 from numpy import linalg as LA
-
+import os
 
 def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwargs):
 
@@ -43,7 +43,7 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
     env, policy, replay_buffer, gcsl_kwargs = variants.get_params(
         env, env_params)
 
-    file_path = '/root/code/gcsl_pseudo_algo/trained_policies/ant16rooms_policy3/'
+    file_path = '/root/code/gcsl_pseudo_algo/ant/data/example/' + env_name + '/ant16rooms_test10_finetune1e6(center)_redo2_SL/'
     policy_filename = file_path + 'policy.pkl'
 
     # load main policy trained by SL
@@ -56,7 +56,7 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
     v_policy.load_policy(v_policy_filename)
 
 
-    graph = Graph()
+    graph = Graph((0, 0), (0, 0), algo='Dijkstra')
     policy = policy.cuda()
 
     algo = GCSL_Graph(
@@ -144,16 +144,15 @@ def run(output_dir='/tmp', env_name='pointmass_empty', gpu=True, seed=0, **kwarg
     goals,avoids = path_finding(specs[spec_num], v_policy, predicates, debug=True)
     goals = [predicates[goal] for goal in goals]
 
-    exp_prefix = 'evaluate/%s/rrt_star/' % (env_name,)
+    exp_prefix = 'evaluate/%s/' % (env_name,)
     with log_utils.setup_logger(exp_prefix=exp_prefix, log_base_dir=output_dir):
         algo.visualize_evaluate_policy_with_LTL_buchi(goals, avoids, eval_episodes=10, greedy=True, prefix='Eval', env_type=env_name, spec_num=str(spec_num)+'_')
 
 
 if __name__ == "__main__":
-    assert len(sys.argv) == 4
+    assert len(sys.argv) == 3
     env_name = str(sys.argv[1])
-    iter = int(sys.argv[2])
-    spec_num = int(sys.argv[3])
+    spec_num = int(sys.argv[2])
     params = {
         'seed': [0],
         'env_name': [env_name],

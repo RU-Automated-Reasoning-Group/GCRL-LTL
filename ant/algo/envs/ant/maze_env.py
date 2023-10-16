@@ -22,7 +22,7 @@ import math
 import numpy as np
 import gym
 
-from envs.ant import maze_env_utils
+from algo.envs.ant import maze_env_utils
 
 # Directory that contains mujoco xml files.
 MODEL_DIR = os.path.dirname(os.path.realpath(__file__)) + '/assets'
@@ -240,9 +240,6 @@ class MazeEnv(gym.Env):
             if 'name' not in geom.attrib:
                 raise Exception("Every geom of the torso must have a name "
                                 "defined")
-        # with open('./code/gcsl_ant/ant_save_with_maze_gemo.xml', 'wb') as f:
-        #     tree.write(f)
-        # print("#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!")
 
         _, file_path = tempfile.mkstemp(text=True, suffix='.xml')
         tree.write(file_path)
