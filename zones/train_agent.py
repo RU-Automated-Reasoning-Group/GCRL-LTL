@@ -5,13 +5,13 @@ import torch
 import torch.nn as nn
 import gym
 import numpy as np
+from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.callbacks import CallbackList, EvalCallback
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 
-from rl.gc_ppo import GCPPO
 from rl.traj_buffer import TrajectoryBuffer
 from rl.callbacks import CollectTrajectoryCallback
 from envs import ZonesEnv, ZoneRandomGoalTrajEnv
@@ -67,7 +67,7 @@ def main(args):
     )
 
     env = make_vec_env(env_fn, n_envs=num_cpus, seed=seed, vec_env_cls=SubprocVecEnv)
-    model = GCPPO(
+    model = PPO(
         policy='MultiInputPolicy',
         policy_kwargs=dict(
             activation_fn=nn.ReLU, 
@@ -108,7 +108,7 @@ def main(args):
         deterministic=True,
     )
     
-    traj_buffer = TrajectoryBuffer(traj_length=1000, buffer_size=total_timesteps, obs_dim=100, n_envs=num_cpus)
+    traj_buffer = TrajectoryBuffer(traj_length=1000, buffer_size=total_timesteps, obs_dim=100, n_envs=num_cpus, device=device)
     traj_callback = CollectTrajectoryCallback(traj_buffer=traj_buffer)
 
     callback = CallbackList([eval_callback, traj_callback])

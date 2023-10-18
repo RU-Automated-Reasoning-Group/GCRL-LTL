@@ -32,11 +32,13 @@ class TrajectoryBuffer:
         buffer_size: int = 100000,
         obs_dim: int = 100,
         n_envs: int = 1,
+        device: str = 'cpu',
     ):
         self.traj_length = traj_length
         self.buffer_size = buffer_size
         self.obs_dim = obs_dim
         self.n_envs = n_envs
+        self.device = device
         self.zone_vector = get_zone_vector()
         self.reset()
     
@@ -55,7 +57,7 @@ class TrajectoryBuffer:
         rollout_obs = rollout_buffer.observations['obs'].transpose(1, 0, 2)  # (n_envs, n_steps/n_envs, obs_dim)
         rollout_success = rollout_buffer.observations['success'].transpose(1, 0, 2)
         rollout_steps = rollout_buffer.observations['steps'].transpose(1, 0, 2)
-        
+
         shape = rollout_obs.shape
         forward_steps = shape[1]
 
@@ -75,13 +77,13 @@ class TrajectoryBuffer:
                 pos, forward_steps = 0, 0
                 while pos < buffer_length:
                     local_states.append(self.buffers[pid]['obs'][pos])
-                    if forward_steps >= self.traj_length - 1 and not self.buffers[pid]['success']:
+                    if forward_steps >= self.traj_length - 1 and not self.buffers[pid]['success'][pos]:
                         local_states, local_goal_values = [], []
                         forward_steps = 0
-                    elif self.buffers[pid]['success']:
-                        # TODO: compute the goal-value for all possible goals
+                    elif self.buffers[pid]['success'][pos]:
+                        # compute the goal-value for all possible goals
                         for state in local_states:
-                            local_goal_values.append(self.get_goal_value(state), policy)
+                            local_goal_values.append(self.get_goal_value(state, policy))
                         states += local_states
                         goal_values += local_goal_values
                         local_states, local_goal_values = [], []
@@ -90,13 +92,14 @@ class TrajectoryBuffer:
                     pos += 1
                     forward_steps += 1
 
-        return TrajectoryBufferDataset(states=state, goal_values=goal_values)
+        return TrajectoryBufferDataset(states=states, goal_values=goal_values)
 
     def get_goal_value(self, state, policy):
-        goal_value = -np.ones((4), dtype=np.float32)
+        goal_value = -np.ones((4,), dtype=np.float32)
         for idx, zone in enumerate(self.zone_vector):
-            if not np.array_equal(state[-self.ZONE_OBS_DIM:], self.zone_vector[zone]):
+            if not np.allclose(state[-self.ZONE_OBS_DIM:], self.zone_vector[zone]):
                 with torch.no_grad():
-                    goal_value[idx] = policy.predict_value(np.concatenate(state, self.zone_vector[zone]))
+                    obs = {'obs': torch.from_numpy(np.concatenate((state[:-self.ZONE_OBS_DIM], self.zone_vector[zone]))).unsqueeze(dim=0).to(self.device)}
+                    goal_value[idx] = policy.predict_values(obs)[0].item()
         
         return goal_value
