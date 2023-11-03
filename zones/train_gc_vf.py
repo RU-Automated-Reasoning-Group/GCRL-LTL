@@ -19,8 +19,7 @@ def main(args):
     lr = args.lr
     batch_size = args.batch_size
 
-    #dataset = torch.load(dataset_path)
-    dataset = torch.load('./datasets/traj_dataset_save.pt')
+    dataset = torch.load(dataset_path)
     train_dataloader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
     test_dataloader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=False)
 
@@ -64,7 +63,7 @@ def main(args):
         
         return total_loss / batch_size
     
-    best_loss = -np.inf
+    best_loss = np.inf
     for epoch in range(num_epochs):
 
         model.train()
@@ -74,7 +73,7 @@ def main(args):
         
         if train_loss < best_loss:
             best_loss = train_loss
-            #torch.save(model.state_dict(), './models/gc_vf.pth')
+            torch.save(model.state_dict(), './models/gc_vf.pth')
 
         print('[EPOCH][{}][LOSS][{}][BEST LOSS][{}]'.format(epoch, train_loss, best_loss))
     
@@ -85,7 +84,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--device', type=str, default='cpu')
     parser.add_argument('--seed', type=int, default=123)
-    parser.add_argument('--dataset_path', type=str, default='datasets/traj_dataset_save.pt')
+    parser.add_argument('--dataset_path', type=str, default='datasets/traj_dataset.pt')
     parser.add_argument('--batch_size', type=int, default=512)
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--num_epochs', type=int, default=1000)
