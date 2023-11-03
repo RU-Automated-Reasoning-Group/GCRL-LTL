@@ -104,7 +104,7 @@ def main(args):
         best_model_save_path=eval_log_path,
         log_path=eval_log_path,
         eval_freq=100000/num_cpus,
-        n_eval_episodes=20,
+        n_eval_episodes=1,
         deterministic=True,
     )
     
@@ -116,7 +116,7 @@ def main(args):
     model.learn(total_timesteps=total_timesteps, callback=callback)
 
     traj_dataset = traj_buffer.build_dataset(model.policy)
-    torch.save(traj_dataset, './datasets/traj_dataset.pt')
+    torch.save(traj_dataset, './datasets/{}_traj_dataset.pt'.format(exp_name))
 
 
 if __name__ == '__main__':

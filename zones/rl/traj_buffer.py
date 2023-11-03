@@ -92,6 +92,7 @@ class TrajectoryBuffer:
                     pos += 1
                     forward_steps += 1
 
+        print(len(states), len(goal_values))
         return TrajectoryBufferDataset(states=states, goal_values=goal_values)
 
     def get_goal_value(self, state, policy):
