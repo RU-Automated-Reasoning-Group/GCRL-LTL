@@ -104,7 +104,7 @@ def main(args):
         best_model_save_path=eval_log_path,
         log_path=eval_log_path,
         eval_freq=100000/num_cpus,
-        n_eval_episodes=1,
+        n_eval_episodes=10,
         deterministic=True,
     )
     

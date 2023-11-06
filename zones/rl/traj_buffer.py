@@ -1,4 +1,5 @@
 from typing import Any
+import random
 
 import torch
 from torch.utils.data import Dataset
@@ -81,11 +82,17 @@ class TrajectoryBuffer:
                         local_states, local_goal_values = [], []
                         forward_steps = 0
                     elif self.buffers[pid]['success'][pos]:
-                        # compute the goal-value for all possible goals
-                        for state in local_states:
-                            local_goal_values.append(self.get_goal_value(state, policy))
-                        states += local_states
-                        goal_values += local_goal_values
+                        if random.random() > 0.9:
+                            _local_states = []
+                            # compute the goal-value for all possible goals
+                            for state in local_states:
+                                values = self.get_goal_value(state, policy)
+                                for g in values:
+                                    if values[g]:
+                                        _local_states.append(np.concatenate((state, get_zone_vector()[g]), axis=0))
+                                        local_goal_values.append(values[g])
+                            states += _local_states
+                            goal_values += local_goal_values
                         local_states, local_goal_values = [], []
                         forward_steps = 0
                     
@@ -94,13 +101,13 @@ class TrajectoryBuffer:
 
         print(len(states), len(goal_values))
         return TrajectoryBufferDataset(states=states, goal_values=goal_values)
-
+    
     def get_goal_value(self, state, policy):
-        goal_value = -np.ones((4,), dtype=np.float32)
-        for idx, zone in enumerate(self.zone_vector):
+        goal_value = {'J': None, 'W': None, 'R': None, 'Y': None}
+        for zone in self.zone_vector:
             if not np.allclose(state[-self.ZONE_OBS_DIM:], self.zone_vector[zone]):
                 with torch.no_grad():
                     obs = {'obs': torch.from_numpy(np.concatenate((state[:-self.ZONE_OBS_DIM], self.zone_vector[zone]))).unsqueeze(dim=0).to(self.device)}
-                    goal_value[idx] = policy.predict_values(obs)[0].item()
+                    goal_value[zone] = policy.predict_values(obs)[0].item()
         
         return goal_value

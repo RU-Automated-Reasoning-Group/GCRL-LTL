@@ -76,7 +76,6 @@ def main(args):
             torch.save(model.state_dict(), './models/gc_vf.pth')
 
         print('[EPOCH][{}][LOSS][{}][BEST LOSS][{}]'.format(epoch, train_loss, best_loss))
-    
 
 
 if __name__ == '__main__':
