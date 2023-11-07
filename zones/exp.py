@@ -1,5 +1,6 @@
 import argparse
 import random
+import itertools
 
 import torch
 import gym
@@ -10,6 +11,9 @@ from envs import ZonesEnv, ZoneRandomGoalEnv
 from envs.utils import get_zone_vector
 from algo import path_finding, reaching
 from sampler import TaskSampler
+from rl.goal_value_net import GCVNetwork
+
+ZONE_OBS_DIM = 24
 
 
 class TaskConfig:
@@ -17,6 +21,7 @@ class TaskConfig:
         self.task = args.task
         self.seed = args.seed
         self.rl_model_path = args.rl_model_path
+        self.gcvf_path = args.gcvf_path
         self.eval_repeats = args.eval_repeats
         self.device = torch.device(args.device)
         self.init_task_params()
@@ -40,6 +45,27 @@ class TaskConfig:
             self.max_timesteps = 1500
 
 
+def get_value_map(model, gcvf, ob, zone_vector, device):
+    core_ob = ob[:-ZONE_OBS_DIM]
+    aps = ['J', 'W', 'R', 'Y']
+    value_map = {}
+    value_map_keys = aps
+    for idx, pair in enumerate(itertools.product(aps, aps)):
+        if pair[0] != pair[1]:
+            value_map_keys.append(pair[0] + pair[1])
+            value_map_keys.append(pair[1] + pair[0])
+    for plan in value_map_keys:
+        if len(plan) == 1:
+            map_ob = np.concatenate((core_ob, zone_vector[plan]), axis=0)
+            _, critic = model.policy.mlp_extractor(torch.as_tensor(map_ob).float().to(device))
+            value_map[plan] = model.policy.value_net(critic)
+        elif len(plan) == 2:
+            map_ob = np.concatenate((core_ob, zone_vector[plan[0]], zone_vector[plan[1]]), axis=0)
+            value_map[plan] = gcvf.predict(map_ob)
+    
+    return value_map
+
+
 def exp(config):
 
     task = config.task
@@ -47,6 +73,9 @@ def exp(config):
     device = config.device
 
     model = PPO.load(config.rl_model_path, device=device)
+    gcvf = GCVNetwork(input_dim=124)
+    gcvf.load_state_dict(torch.load(config.gcvf_path))
+    gcvf = gcvf.to(device)
     
     num_success, num_dangerous = 0, 0
     total_rewards = 0
@@ -61,8 +90,21 @@ def exp(config):
 
             random.seed(seed + i)
 
+            env = ZoneRandomGoalEnv(
+                env=gym.make('Zones-8-v1', map_seed=seed+i, timeout=10000000),  # NOTE: dummy timeout
+                primitives_path='models/primitives',
+                goals_representation=config.goals_representation,
+                use_primitves=True,
+                temperature=config.temp,
+                device=config.device,
+                max_timesteps=config.max_timesteps,
+                debug=False if task in ('stable') else True,
+            )
+            ob = env.reset()
+
             formula = sampler.sample()
-            GOALS, AVOID_ZONES = path_finding(formula)
+            value_map = get_value_map(model, gcvf, ob, get_zone_vector(), device)
+            GOALS, AVOID_ZONES = path_finding(formula, value_map)
             
             print('+'*80)
             print('[ITERATION][{}]'.format(i))
@@ -74,18 +116,6 @@ def exp(config):
             elif task in ('traverse'):
                 TRAVERSE_GOAL, TRAVERSE_AVOID = GOALS[:2], AVOID_ZONES[:2]
                 print('[FORMULA]', formula, '[GOALS]', TRAVERSE_GOAL, '[AVOID]', TRAVERSE_AVOID)
-
-            env = ZoneRandomGoalEnv(
-                env=gym.make('Zones-8-v1', map_seed=seed+i, timeout=10000000),  # NOTE: dummy timeout
-                primitives_path='models/primitives',
-                goals_representation=config.goals_representation,
-                use_primitves=True,
-                temperature=config.temp,
-                device=config.device,
-                max_timesteps=config.max_timesteps,
-                debug=False if task in ('stable') else True,
-            )
-            env.reset()
 
             task_info = reaching(env, model, GOALS, AVOID_ZONES, value_threshold=config.value_threshold, device=device)
             if task_info['complete']:
@@ -122,6 +152,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=123)
     parser.add_argument('--task', type=str, default='avoid', choices=('avoid', 'chain', 'stable', 'traverse'))
     parser.add_argument('--rl_model_path', type=str, default='models/goal-conditioned/best_model_ppo_8')
+    parser.add_argument('--gcvf_path', type=str, default='models/goal-conditioned/gcvf.pth')
     parser.add_argument('--eval_repeats', type=int, default=20)
     parser.add_argument('--device', type=str, default='cpu')
     

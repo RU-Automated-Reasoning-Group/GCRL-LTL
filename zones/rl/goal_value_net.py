@@ -11,10 +11,17 @@ class GCVNetwork(nn.Module):
             nn.ReLU(),
             nn.Linear(1024, 1024),
             nn.ReLU(),
-            nn.Linear(1024, 512),
+            nn.Linear(1024, 1024),
             nn.ReLU(),
-            nn.Linear(512, 1),
+            nn.Linear(1024, 1024),
+            nn.ReLU(),
+            nn.Linear(1024, 1),
         )
 
     def forward(self, x):
         return self.model(x)
+    
+    def predict(self, x):
+        with torch.no_grad():
+            x = torch.from_numpy(x).float()
+            return self.model(x)

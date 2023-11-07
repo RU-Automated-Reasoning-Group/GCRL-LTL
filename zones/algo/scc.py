@@ -88,8 +88,9 @@ class SCCAlgorithm:
 
 
 class PathFindingAlgorithm:
-    def __init__(self, graph, path_type='direct'):
+    def __init__(self, graph, value_map, path_type='direct'):
         self.graph = graph
+        self.value_map = value_map
         assert path_type in ('direct', 'loop')
         self.path_type = path_type
         self.nodes = []
@@ -102,6 +103,15 @@ class PathFindingAlgorithm:
                 self.storage[src]['next'].append(dst)
                 self.storage[src]['edges'].append(f)
         self.build_matrix()
+    
+    def compute_cost(self, src, dst):
+        src, dst = src.split('|')[1].upper(), dst.split('|')[1].upper()
+        if src == 'EMPTY':
+            cost = self.value_map[str(dst)]
+        else:
+            cost = self.value_map[str(src + dst)]
+        
+        return cost.item()
 
     def build_matrix(self):
         self.matrix = [[INF] * len(self.nodes) for _ in range(len(self.nodes))]
@@ -113,9 +123,10 @@ class PathFindingAlgorithm:
                 row[self.node_to_index(node)] = INF
             for edge in self.graph.iteroutedges(node):
                 src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ')
+                print('[DEBUG]', src, dst)
                 # TODO: estimate the cost
                 zero_cost = dst.split('|')[1] == '1' or '!' in dst.split('|')[1]
-                row[self.node_to_index(dst)] = 0 if zero_cost else 1
+                row[self.node_to_index(dst)] = 0 if zero_cost else 1 #self.compute_cost(src, dst)
 
     def update_matrix(self):
         raise NotImplementedError
@@ -253,7 +264,7 @@ class PathFindingAlgorithm:
         return GOALS, AVOIDS
 
 
-def path_finding(formula, debug=False):
+def path_finding(formula, value_map, debug=False):
 
     formula = reformat_ltl(formula)
     ltl_args = get_ltl_args(formula=formula)
@@ -276,7 +287,7 @@ def path_finding(formula, debug=False):
             print('[searching scc]', scc)
         accepting_nodes=[node for node in scc if 'accept' in node]
         
-        path_algo = PathFindingAlgorithm(graph=path_graph, path_type='direct')
+        path_algo = PathFindingAlgorithm(graph=path_graph, value_map=value_map, path_type='direct')
         acc_paths = path_algo.get_accepting_path(accepting_nodes=accepting_nodes)
         if debug:
             print('[acc_paths]', acc_paths)
@@ -287,7 +298,7 @@ def path_finding(formula, debug=False):
             cost = acc_paths[accepting_nodes[0]]['cost']
         else:
             scc_graph = path_graph.build_sub_graph(sub_graph_nodes=scc)
-            loop_algo = PathFindingAlgorithm(graph=scc_graph, path_type='loop')
+            loop_algo = PathFindingAlgorithm(graph=scc_graph, value_map=value_map, path_type='loop')
             loop_paths = loop_algo.get_loop_path(accepting_nodes=accepting_nodes)
             if debug:
                 scc_graph.save('scc_path_finding.png')
