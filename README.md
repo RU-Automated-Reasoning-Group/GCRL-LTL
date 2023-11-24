@@ -31,9 +31,18 @@ We use a robot from Safety Gym called Point, with one actuator for turning and a
     ```
     python train_primitives.py
     ```
-* Training goal-conditioned policy for `ZoneEnv`:
+* Training goal-conditioned policy for `ZoneEnv` and acquire a trajectory dataset:
     ```bash
-    python train_gc_policy.py
+    python train_agent.py
+    ```
+* Training goal-value function for `ZoneEnv`:
+    ```
+    python train_gcvf.py
+    ```
+* Optionally, train a goal-value function without training a new policy:
+    ```
+    python collect_traj.py
+    python train_gcvf.py
     ```
 ### Models
 * Primitive action policies for navigating the `Point` robot are saved in:
