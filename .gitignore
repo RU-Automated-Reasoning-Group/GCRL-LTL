@@ -2,6 +2,9 @@
 *.gv
 *.pdf
 *.png
+*.zip
+/zones/logs
+/zones/datasets
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
