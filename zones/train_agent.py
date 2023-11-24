@@ -91,7 +91,7 @@ def main(args):
 
     eval_log_path = 'logs/ppo/{}/'.format(exp_name)
     eval_env_fn = lambda: ZoneRandomGoalTrajEnv(
-        env=gym.make('Zones-8-v0', timeout=1000),
+        env=gym.make('Zones-8-v0', timeout=timeout),
         primitives_path='models/primitives',
         zones_representation=get_zone_vector(),
         use_primitves=True,

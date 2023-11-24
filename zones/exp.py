@@ -61,7 +61,7 @@ def get_value_map(model, gcvf, ob, zone_vector, device):
             value_map[plan] = model.policy.value_net(critic)
         elif len(plan) == 2:
             map_ob = np.concatenate((core_ob, zone_vector[plan[0]], zone_vector[plan[1]]), axis=0)
-            value_map[plan] = gcvf.predict(map_ob)
+            value_map[plan] = gcvf.predict(torch.as_tensor(map_ob).float().to(device))
     
     return value_map
 

@@ -23,5 +23,4 @@ class GCVNetwork(nn.Module):
     
     def predict(self, x):
         with torch.no_grad():
-            x = torch.from_numpy(x).float()
             return self.model(x)

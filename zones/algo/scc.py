@@ -123,10 +123,8 @@ class PathFindingAlgorithm:
                 row[self.node_to_index(node)] = INF
             for edge in self.graph.iteroutedges(node):
                 src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ')
-                print('[DEBUG]', src, dst)
-                # TODO: estimate the cost
                 zero_cost = dst.split('|')[1] == '1' or '!' in dst.split('|')[1]
-                row[self.node_to_index(dst)] = 0 if zero_cost else 1 #self.compute_cost(src, dst)
+                row[self.node_to_index(dst)] = 0 if zero_cost else self.compute_cost(src, dst)
 
     def update_matrix(self):
         raise NotImplementedError

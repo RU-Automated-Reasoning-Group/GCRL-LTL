@@ -85,8 +85,7 @@ if __name__ == '__main__':
     parser.add_argument('--buffer_size', type=int, default=200000)
     parser.add_argument('--seed', type=int, default=123)
     parser.add_argument('--model_path', type=str, default='models/goal-conditioned/best_model_ppo_8')
-    #parser.add_argument('--model_path', type=str, default='models/gc_ppo_policy')
-    parser.add_argument('--exp_name', type=str, default='my_traj_dataset')
+    parser.add_argument('--exp_name', type=str, default='traj_dataset')
     parser.add_argument('--execution_mode', type=str, default='primitives', choices=('primitives'))
     
     args = parser.parse_args()
