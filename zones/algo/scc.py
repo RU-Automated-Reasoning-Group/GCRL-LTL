@@ -124,7 +124,7 @@ class PathFindingAlgorithm:
             for edge in self.graph.iteroutedges(node):
                 src, dst, f = edge[0], edge[1], edge.attr['label'].replace(' ', '').replace('&&', ' && ')
                 zero_cost = dst.split('|')[1] == '1' or '!' in dst.split('|')[1]
-                row[self.node_to_index(dst)] = 0 if zero_cost else self.compute_cost(src, dst)
+                row[self.node_to_index(dst)] = 0 if zero_cost else min(1 - self.compute_cost(src, dst), 0)
 
     def update_matrix(self):
         raise NotImplementedError
