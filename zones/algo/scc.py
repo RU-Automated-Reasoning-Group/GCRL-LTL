@@ -106,7 +106,7 @@ class PathFindingAlgorithm:
     
     def compute_cost(self, src, dst):
         src, dst = src.split('|')[1].upper(), dst.split('|')[1].upper()
-        if src == 'EMPTY':
+        if src == 'EMPTY' or '1':
             cost = self.value_map[str(dst)]
         else:
             cost = self.value_map[str(src + dst)]
