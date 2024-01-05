@@ -121,6 +121,7 @@ class GCSL_Graph:
         # keep tracking of trajectory
         states = []
         actions = []
+        done = False
 
         for t in range(self.max_path_length):
 
@@ -137,16 +138,18 @@ class GCSL_Graph:
 
             actions.append(action)
             # execute action on current state
-            state, _, done, _ = self.env.step(action)
+            state, _, _, _ = self.env.step(action)
 
             if done == False:
                 done = True if np.linalg.norm(
                     (states[-1][:2] - goal), axis=-1) < self.goal_threshold else False
+                if done == True:
+                    trajectory_length = len(states)
 
             # if done == True:
             #     # states.append(state)
             #     break
-        trajectory_length = len(states)
+        trajectory_length = trajectory_length if done == True else len(states) 
 
         return np.stack(states), np.array(actions), goal_state, trajectory_length
 
