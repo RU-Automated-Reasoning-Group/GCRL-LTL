@@ -193,7 +193,7 @@ export PYTHONPATH="${PYTHONPATH}:{path_of_GCRL-LTL_ant_folder}"
 ##### Testing with LTL specifications
 
 ```
-python RRT_star/Testing_LTLSpecs_with_graph_ant16rooms.py ant16rooms {#ofspecification}
+python experiments/TestLTLspecs_Buchi.py ant16rooms {#ofspecification}
 ```
 specifications $\phi_1$ to $\phi_5$ are corresponding to # 9 to 13 as input
 
